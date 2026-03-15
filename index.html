@@ -1,58 +1,121 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance Pro Ultra</title>
+
+<title>Smart Finance</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 :root{
---primary:#4f46e5;
---bg:#f8fafc;
+--primary:#3b5bdb;
+--bg:#f1f5f9;
 --card:#ffffff;
 --text:#0f172a;
 --muted:#64748b;
+--green:#16a34a;
 --red:#ef4444;
---green:#10b981;
 --border:#e2e8f0;
 }
 
-[data-theme="dark"]{
---bg:#0f172a;
---card:#1e293b;
---text:#f8fafc;
---muted:#94a3b8;
---border:#334155;
-}
-
 body{
-font-family:-apple-system;
+margin:0;
+font-family:-apple-system, BlinkMacSystemFont;
 background:var(--bg);
 color:var(--text);
-margin:0;
 padding-bottom:90px;
+}
+
+.header{
+padding:20px;
+background:linear-gradient(135deg,#3b5bdb,#6366f1);
+color:white;
+border-bottom-left-radius:25px;
+border-bottom-right-radius:25px;
+}
+
+.balance{
+font-size:34px;
+font-weight:800;
+margin-top:5px;
+}
+
+.row{
+display:flex;
+gap:10px;
+margin-top:15px;
+}
+
+.smallCard{
+flex:1;
+background:rgba(255,255,255,0.2);
+padding:10px;
+border-radius:12px;
+font-size:13px;
+}
+
+.container{
+padding:15px;
 }
 
 .card{
 background:var(--card);
 border-radius:18px;
-padding:18px;
-margin:15px;
-border:1px solid var(--border);
+padding:16px;
+margin-bottom:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.05);
 }
 
 .title{
 font-size:13px;
 color:var(--muted);
-margin-bottom:6px;
+margin-bottom:8px;
 }
 
-.big{
-font-size:36px;
-font-weight:800;
+.tx{
+display:flex;
+justify-content:space-between;
+padding:12px 0;
+border-bottom:1px solid var(--border);
+}
+
+.fab{
+position:fixed;
+bottom:70px;
+left:50%;
+transform:translateX(-50%);
+width:60px;
+height:60px;
+background:var(--primary);
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-size:28px;
+box-shadow:0 8px 20px rgba(0,0,0,0.2);
+cursor:pointer;
+}
+
+.bottomNav{
+position:fixed;
+bottom:0;
+width:100%;
+background:white;
+border-top:1px solid var(--border);
+display:flex;
+justify-content:space-around;
+padding:10px 0;
+}
+
+.bottomNav div{
+text-align:center;
+font-size:12px;
+color:var(--muted);
 }
 
 input,select{
@@ -66,57 +129,36 @@ margin-bottom:10px;
 button{
 width:100%;
 padding:14px;
-background:var(--primary);
 border:none;
 border-radius:12px;
+background:var(--primary);
 color:white;
 font-weight:bold;
-cursor:pointer;
 }
 
-.tx{
-display:flex;
-justify-content:space-between;
-padding:12px 0;
-border-bottom:1px solid var(--border);
-animation:pop .25s ease;
+.modal{
+display:none;
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+background:white;
+border-radius:20px 20px 0 0;
+padding:20px;
+box-shadow:0 -10px 30px rgba(0,0,0,0.2);
 }
 
-@keyframes pop{
-from{opacity:0;transform:scale(.95)}
-to{opacity:1;transform:scale(1)}
-}
-
-.progress-bar{
-height:8px;
-background:var(--border);
-border-radius:4px;
-overflow:hidden;
+.progress{
+height:6px;
+background:#e2e8f0;
+border-radius:5px;
 margin-top:5px;
 }
 
-.progress-fill{
+.progress div{
 height:100%;
 background:var(--primary);
-}
-
-.bottom{
-position:fixed;
-bottom:0;
-width:100%;
-display:flex;
-justify-content:space-around;
-background:var(--card);
-padding:15px;
-border-top:1px solid var(--border);
-}
-
-.nav{cursor:pointer;text-align:center}
-
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
+border-radius:5px;
 }
 
 </style>
@@ -124,14 +166,32 @@ gap:10px;
 
 <body>
 
-<div class="card">
-<div class="title">יתרה</div>
-<div class="big" id="bal">₪0</div>
+<div class="header">
+
+<div>יתרה כוללת</div>
+<div class="balance" id="balance">₪0</div>
+
+<div class="row">
+
+<div class="smallCard">
+הכנסות<br>
+<strong id="income">₪0</strong>
 </div>
+
+<div class="smallCard">
+הוצאות<br>
+<strong id="expense">₪0</strong>
+</div>
+
+</div>
+
+</div>
+
+<div class="container">
 
 <div class="card">
 <div class="title">תחזית סוף חודש</div>
-<div class="big" id="forecast">₪0</div>
+<strong id="forecast">₪0</strong>
 </div>
 
 <div class="card">
@@ -145,42 +205,33 @@ gap:10px;
 </div>
 
 <div class="card">
-<div class="title">מגמה חודשית</div>
+<div class="title">מגמת מאזן</div>
 <canvas id="trendChart"></canvas>
 </div>
 
 <div class="card">
-<div class="title">תקציב לפי קטגוריה</div>
-<div id="catBudget"></div>
+
+<input id="search" placeholder="חיפוש תנועה..." oninput="render()">
+
+<div id="txList"></div>
+
 </div>
 
-<div class="card">
-<div class="title">סטטיסטיקות חודשיות</div>
-<div id="stats" class="grid"></div>
 </div>
 
-<div class="card">
-<input id="search" placeholder="חיפוש..." oninput="render()">
-<select id="filter" onchange="render()">
-<option value="all">הכל</option>
-<option value="in">הכנסות</option>
-<option value="out">הוצאות</option>
-</select>
+<div class="fab" onclick="openAdd()">+</div>
+
+<div class="bottomNav">
+
+<div>🏠<br>בית</div>
+<div>📊<br>דוחות</div>
+<div onclick="exportCSV()">⬇<br>יצוא</div>
+
 </div>
 
-<div class="card">
-<div id="list"></div>
-</div>
+<div class="modal" id="addModal">
 
-<div class="bottom">
-<div class="nav" onclick="toggleAdd()">➕</div>
-<div class="nav" onclick="toggleTheme()">🌓</div>
-<div class="nav" onclick="exportCSV()">📊</div>
-</div>
-
-<div id="addBox" style="display:none" class="card">
-
-<input id="amt" type="number" placeholder="סכום">
+<input id="amount" type="number" placeholder="סכום">
 
 <input id="note" placeholder="תיאור">
 
@@ -195,48 +246,28 @@ gap:10px;
 
 <script>
 
-let db=JSON.parse(localStorage.getItem("db"))||[]
+let db = JSON.parse(localStorage.getItem("finance_db")) || []
 
-let budgets={
-"סופר":1500,
-"רכב":700,
-"פנאי":600,
-"חשבונות":1200,
-"שונות":400
-}
+let catChart
+let trendChart
 
-let catIcons={
-"סופר":"🛒",
-"רכב":"🚗",
-"פנאי":"🍔",
-"משכורת":"💰",
-"שונות":"✨"
-}
-
-function autoCat(text){
-
-text=text.toLowerCase()
-
-if(text.includes("סופר"))return"סופר"
-if(text.includes("דלק"))return"רכב"
-if(text.includes("מסעדה"))return"פנאי"
-if(text.includes("משכורת"))return"משכורת"
-
-return"שונות"
-
+function openAdd(){
+document.getElementById("addModal").style.display="block"
 }
 
 function addTx(){
 
-let amt=parseFloat(document.getElementById("amt").value)
-
+let amt=parseFloat(amount.value)
 let note=document.getElementById("note").value
-
 let type=document.getElementById("type").value
 
-if(!amt||!note)return
+if(!amt || !note) return
 
-let cat=autoCat(note)
+let cat="שונות"
+
+if(note.includes("סופר")) cat="סופר"
+if(note.includes("דלק")) cat="רכב"
+if(note.includes("מסעדה")) cat="פנאי"
 
 db.push({
 id:Date.now(),
@@ -246,10 +277,10 @@ type,
 cat
 })
 
-localStorage.setItem("db",JSON.stringify(db))
+localStorage.setItem("finance_db",JSON.stringify(db))
 
-document.getElementById("amt").value=""
-document.getElementById("note").value=""
+amount.value=""
+note.value=""
 
 render()
 
@@ -257,57 +288,43 @@ render()
 
 function render(){
 
-let list=document.getElementById("list")
-
-list.innerHTML=""
-
 let total=0
-
-let search=document.getElementById("search").value.toLowerCase()
-
-let filter=document.getElementById("filter").value
+let income=0
+let expense=0
 
 let catData={}
 let monthData={}
 
-let inMonth=0
-let outMonth=0
+let search=document.getElementById("search").value.toLowerCase()
 
-let month=new Date().getMonth()
+let list=document.getElementById("txList")
+list.innerHTML=""
 
 db.slice().reverse().forEach(t=>{
 
-if(search && !t.note.toLowerCase().includes(search))return
-if(filter!="all" && filter!=t.type)return
+if(search && !t.note.toLowerCase().includes(search)) return
 
-let val=t.type=="in"?t.amt:-t.amt
+let val = t.type==="in"?t.amt:-t.amt
 
 total+=val
 
-let tMonth=new Date(t.id).getMonth()
-
-if(tMonth===month){
-
-if(t.type=="in")inMonth+=t.amt
+if(t.type==="in") income+=t.amt
 else{
-outMonth+=t.amt
+expense+=t.amt
 catData[t.cat]=(catData[t.cat]||0)+t.amt
 }
 
-}
-
-let m=tMonth+1
-
+let m=new Date(t.id).getMonth()+1
 monthData[m]=(monthData[m]||0)+val
 
 list.innerHTML+=`
 
 <div class="tx">
 
-<div>${catIcons[t.cat]||"🏷"} ${t.note}</div>
+<div>${t.note}</div>
 
-<div style="color:${t.type=="in"?"green":"red"}">
-${t.type=="in"?"+":"-"}₪${t.amt}
+<div style="color:${t.type==="in"?"green":"red"}">
+${t.type==="in"?"+":"-"}₪${t.amt}
 </div>
 
 </div>
@@ -316,121 +333,51 @@ ${t.type=="in"?"+":"-"}₪${t.amt}
 
 })
 
-document.getElementById("bal").innerText="₪"+total
+balance.innerText="₪"+total
+income.innerText="₪"+income
+expense.innerText="₪"+expense
+
+forecast(income,expense)
+
+analysis(income,expense,catData)
 
 drawCat(catData)
 
 drawTrend(monthData)
 
-forecast(inMonth,outMonth)
-
-analysis(inMonth,outMonth,catData)
-
-stats(inMonth,outMonth)
-
-renderBudgets(catData)
-
 }
 
-function forecast(inMonth,outMonth){
+function forecast(income,expense){
 
 let day=new Date().getDate()
-
 let days=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate()
 
-let avg=outMonth/day
-
+let avg=expense/day
 let pred=avg*days
 
-let val=inMonth-pred
-
-document.getElementById("forecast").innerText="₪"+Math.round(val)
+forecast.innerText="₪"+Math.round(income-pred)
 
 }
 
-function analysis(inMonth,outMonth,catData){
+function analysis(income,expense,catData){
 
 let msg=[]
 
-if(outMonth>inMonth)msg.push("⚠️ ההוצאות גבוהות מההכנסות")
+if(expense>income) msg.push("⚠️ ההוצאות גבוהות מההכנסות")
 
 let top=Object.keys(catData).sort((a,b)=>catData[b]-catData[a])[0]
 
-if(top)msg.push("📊 ההוצאה הגדולה ביותר: "+top)
+if(top) msg.push("📊 ההוצאה הגדולה ביותר: "+top)
 
-if(outMonth<inMonth*0.6)msg.push("💰 ניהול תקציב מצוין")
-
-document.getElementById("analysis").innerHTML=msg.join("<br>")
+analysis.innerHTML=msg.join("<br>")
 
 }
-
-function stats(inMonth,outMonth){
-
-let balance=inMonth-outMonth
-
-document.getElementById("stats").innerHTML=`
-
-<div class="card"><div class="title">הכנסות</div><strong>₪${inMonth}</strong></div>
-
-<div class="card"><div class="title">הוצאות</div><strong>₪${outMonth}</strong></div>
-
-<div class="card"><div class="title">מאזן</div><strong>₪${balance}</strong></div>
-
-<div class="card"><div class="title">חיסכון</div><strong>${Math.round((balance/inMonth)*100||0)}%</strong></div>
-
-`
-
-}
-
-function renderBudgets(catData){
-
-let box=document.getElementById("catBudget")
-
-box.innerHTML=""
-
-Object.keys(budgets).forEach(cat=>{
-
-let spent=catData[cat]||0
-
-let budget=budgets[cat]
-
-let p=Math.min((spent/budget)*100,100)
-
-box.innerHTML+=`
-
-<div>
-
-<div style="display:flex;justify-content:space-between;font-size:13px">
-
-<span>${cat}</span>
-
-<span>₪${spent}/₪${budget}</span>
-
-</div>
-
-<div class="progress-bar">
-
-<div class="progress-fill" style="width:${p}%"></div>
-
-</div>
-
-</div>
-
-`
-
-})
-
-}
-
-let catChart
 
 function drawCat(data){
 
-if(catChart)catChart.destroy()
+if(catChart) catChart.destroy()
 
-catChart=new Chart(
-document.getElementById("catChart"),
-{
+catChart=new Chart(catChart,{
 type:"doughnut",
 data:{
 labels:Object.keys(data),
@@ -440,20 +387,16 @@ datasets:[{data:Object.values(data)}]
 
 }
 
-let trendChart
-
 function drawTrend(data){
 
-if(trendChart)trendChart.destroy()
+if(trendChart) trendChart.destroy()
 
-trendChart=new Chart(
-document.getElementById("trendChart"),
-{
-type:"bar",
+trendChart=new Chart(trendChart,{
+type:"line",
 data:{
 labels:Object.keys(data),
 datasets:[{
-label:"מאזן חודשי",
+label:"מאזן",
 data:Object.values(data)
 }]
 }
@@ -461,47 +404,23 @@ data:Object.values(data)
 
 }
 
-function toggleAdd(){
-
-let box=document.getElementById("addBox")
-
-box.style.display=box.style.display=="none"?"block":"none"
-
-}
-
-function toggleTheme(){
-
-let dark=document.body.getAttribute("data-theme")=="dark"
-
-document.body.setAttribute("data-theme",dark?"light":"dark")
-
-}
-
 function exportCSV(){
 
-let csv="date,type,cat,note,amt\n"
+let csv="date,type,note,amount\n"
 
 db.forEach(t=>{
-
-csv+=`${t.id},${t.type},${t.cat},${t.note},${t.amt}\n`
-
+csv+=`${t.id},${t.type},${t.note},${t.amt}\n`
 })
 
 let blob=new Blob([csv])
-
 let a=document.createElement("a")
 
 a.href=URL.createObjectURL(blob)
-
 a.download="finance.csv"
 
 a.click()
 
 }
-
-setInterval(()=>{
-localStorage.setItem("backup",JSON.stringify(db))
-},60000)
 
 render()
 
