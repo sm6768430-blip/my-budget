@@ -3,272 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Pro Max</title>
+    <title>BankPro X</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* משתנים לעיצוב חכם (תמיכה במצב לילה ויום) */
         :root { 
-            --primary: #4f46e5; --primary-light: #e0e7ff; 
-            --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-muted: #64748b;
-            --red: #ef4444; --green: #10b981; --border: #e2e8f0;
+            --bg: #f4f7f6; --surface: #ffffff; --text: #111827; --text-sec: #6b7280; 
+            --brand: #2563eb; --brand-light: #dbeafe; 
+            --success: #10b981; --success-light: #d1fae5;
+            --danger: #ef4444; --danger-light: #fee2e2;
+            --border: #e5e7eb; --radius: 20px;
         }
-        [data-theme="dark"] {
-            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
-            --border: #334155; --primary-light: #312e81;
-        }
+        * { box-sizing: border-box; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        
+        /* Layout */
+        .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Cards & Typography */
+        .card { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        h1, h2, h3 { margin: 0 0 10px 0; }
+        .label { font-size: 13px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .amount-big { font-size: 42px; font-weight: 900; letter-spacing: -1px; margin: 5px 0 15px; }
+        
+        /* Cash Flow Grid */
+        .cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cf-box { padding: 16px; border-radius: 16px; display: flex; flex-direction: column; }
+        .cf-box.in { background: var(--success-light); color: #065f46; }
+        .cf-box.out { background: var(--danger-light); color: #991b1b; }
+        .cf-val { font-size: 20px; font-weight: 700; margin-top: 5px; }
 
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s; padding-bottom: 80px; }
-        * { box-sizing: border-box; }
+        /* Progress & Budgets */
+        .progress-wrap { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+        .progress-bar { height: 100%; background: var(--brand); transition: width 0.5s ease; }
         
-        /* אזורים וכרטיסיות */
-        .container { padding: 16px; display: none; animation: fadeIn 0.3s; }
-        .active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 16px; border: 1px solid var(--border); transition: background 0.3s, border 0.3s; }
-        
-        /* טיפוגרפיה */
-        .title { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .val { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
-        
-        /* טפסים וכפתורים */
-        input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 16px; border-radius: 14px; font-size: 16px; margin-bottom: 12px; outline: none; transition: 0.2s; }
-        input:focus, select:focus { border-color: var(--primary); }
-        button { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.97); }
-        .btn-secondary { background: var(--border); color: var(--text); margin-top: 10px; }
-        
-        /* רשימת תנועות */
+        /* Transactions List */
+        .tx-list { margin-top: 10px; }
         .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
         .tx-item:last-child { border-bottom: none; }
-        .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--primary-light); margin-left: 12px; }
+        .tx-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--brand-light); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 15px; }
+        .tx-details { flex: 1; }
+        .tx-title { font-weight: 700; font-size: 15px; }
+        .tx-date { font-size: 12px; color: var(--text-sec); }
+        .tx-amt { font-weight: 800; font-size: 16px; }
+
+        /* Forms & Buttons */
+        input, select { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg); font-size: 16px; margin-bottom: 15px; outline: none; font-weight: 500; }
+        input:focus { border-color: var(--brand); background: var(--surface); }
+        .btn { width: 100%; padding: 18px; border-radius: 14px; background: var(--brand); color: white; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .btn:active { transform: scale(0.98); }
+
+        /* Floating Add Button & Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 15px 10px 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid var(--border); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: var(--text-sec); font-weight: 500; }
+        .nav-item.active { color: var(--brand); }
+        .nav-icon { font-size: 22px; margin-bottom: 4px; }
         
-        /* תפריט תחתון (Bottom Nav) */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px 10px 25px; border-top: 1px solid var(--border); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 100; transition: background 0.3s; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.2s; }
-        .nav-item.active { color: var(--primary); transform: translateY(-3px); }
-        .nav-icon { font-size: 24px; margin-bottom: 4px; }
-        
-        /* פופאפ (Modal) להוספת תנועה */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
-        .modal-content { background: var(--card); width: 100%; padding: 24px; border-radius: 24px 24px 0 0; animation: slideUp 0.3s; }
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-end; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--surface); width: 100%; padding: 30px 20px; border-radius: 24px 24px 0 0; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 8px; }
-        .progress-fill { height: 100%; background: var(--primary); transition: 0.3s; }
     </style>
 </head>
 <body>
 
-    <div id="page-home" class="container active-page">
-        <div class="card" style="text-align: center;">
-            <div class="title">יתרה נוכחית</div>
-            <div class="val" id="balTotal">₪0</div>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <div style="flex: 1; background: rgba(16,185,129,0.1); padding: 10px; border-radius: 12px; color: var(--green);">
-                    <div style="font-size: 12px;">הכנסות החודש</div><strong id="balIn">₪0</strong>
+    <div id="page-home" class="page active">
+        
+        <div class="card" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white;">
+            <div class="label" style="color: #93c5fd;">תזרים חופשי (Cash Flow)</div>
+            <div class="amount-big" id="cashFlowTotal">₪0</div>
+            
+            <div class="cf-grid">
+                <div class="cf-box" style="background: rgba(255,255,255,0.1); color:white;">
+                    <span style="font-size: 12px; opacity: 0.8;">הכנסות החודש</span>
+                    <span class="cf-val" id="incomeTotal">₪0</span>
                 </div>
-                <div style="flex: 1; background: rgba(239,68,68,0.1); padding: 10px; border-radius: 12px; color: var(--red);">
-                    <div style="font-size: 12px;">הוצאות החודש</div><strong id="balOut">₪0</strong>
+                <div class="cf-box" style="background: rgba(255,255,255,0.1); color:white;">
+                    <span style="font-size: 12px; opacity: 0.8;">הוצאות החודש</span>
+                    <span class="cf-val" id="expenseTotal">₪0</span>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="title" style="display:flex; justify-content: space-between;">
-                <span>מצב תקציב חודשי</span> <span id="goalText">0%</span>
+            <h3 class="label">ניתוח מגמת הוצאות (30 יום אחרונים)</h3>
+            <canvas id="trendChart" height="180"></canvas>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between;">
+                <h3 class="label">ניצול תקציב חודשי</h3>
+                <span id="budgetPerc" style="font-weight:700; font-size:14px;">0%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="goalFill"></div></div>
+            <div class="progress-wrap"><div class="progress-bar" id="budgetBar"></div></div>
+            <div style="font-size: 13px; color: var(--text-sec); margin-top: 8px;" id="budgetText">הגדר תקציב בעמוד הסטטיסטיקות</div>
         </div>
-
+        
         <div class="card">
-            <div class="title">הוצאות לפי קטגוריה</div>
-            <canvas id="chartCat" height="200"></canvas>
-        </div>
-    </div>
-
-    <div id="page-tx" class="container">
-        <div class="card">
-            <div class="title">כל התנועות</div>
-            <div id="txListEmpty" style="text-align:center; padding: 20px; color: var(--text-muted);">אין תנועות עדיין</div>
-            <div id="txList"></div>
+            <h3 class="label">יעד חיסכון: קרן חירום</h3>
+            <div style="display:flex; justify-content: space-between; font-weight:700; margin-top:10px;">
+                <span>₪5,000</span><span style="color:var(--text-sec);">מתוך ₪20,000</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar" style="width: 25%; background: #8b5cf6;"></div></div>
         </div>
     </div>
 
-    <div id="page-settings" class="container">
+    <div id="page-stats" class="page">
         <div class="card">
-            <div class="title">הגדרות אפליקציה</div>
-            <button class="btn-secondary" onclick="toggleTheme()">🌓 החלף מצב תצוגה (יום/לילה)</button>
-            <button class="btn-secondary" onclick="exportCSV()">📊 ייצא נתונים לאקסל (CSV)</button>
+            <h3 class="label">הגדרת תקציב חודשי כולל</h3>
+            <input type="number" id="budgetInput" placeholder="הכנס סכום (למשל 8000)">
+            <button class="btn" style="padding: 12px; border-radius: 10px;" onclick="saveBudget()">עדכן תקציב</button>
         </div>
+        
         <div class="card">
-            <div class="title">יעד תקציב חודשי</div>
-            <input type="number" id="setGoal" placeholder="הכנס סכום יעד" inputmode="numeric">
-            <button onclick="saveGoal()">עדכן יעד</button>
+            <h3 class="label">היסטוריית תנועות</h3>
+            <div class="tx-list" id="transactionsList">
+                </div>
         </div>
     </div>
 
     <div id="addModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h3 style="margin:0;">הוספת תנועה</h3>
-                <span onclick="closeAdd()" style="font-size: 24px; cursor: pointer;">✕</span>
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 20px;">
+                <h2>פעולה חדשה</h2>
+                <span onclick="closeModal()" style="font-size: 24px; padding: 10px; cursor:pointer;">✕</span>
             </div>
-            <input type="number" id="amt" placeholder="סכום (₪)" inputmode="decimal">
-            <input type="text" id="note" placeholder="עבור מה?">
-            <select id="type" onchange="updateCats()">
-                <option value="out">הוצאה 🔻</option>
-                <option value="in">הכנסה 🌿</option>
+            
+            <select id="txType" onchange="updateCategories()">
+                <option value="out">הוצאה (-)</option>
+                <option value="in">הכנסה (+)</option>
             </select>
-            <select id="cat"></select>
-            <button onclick="saveTx()">שמור</button>
+            
+            <input type="number" id="txAmt" placeholder="סכום (₪)">
+            <input type="text" id="txNote" placeholder="תיאור (למשל: סופר פארם)">
+            <select id="txCat"></select>
+            
+            <button class="btn" onclick="addTransaction()">שמור נתונים</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="nav('home', this)">
-            <div class="nav-icon">🏠</div><span>ראשי</span>
+        <div class="nav-item active" onclick="switchPage('home', this)">
+            <div class="nav-icon">📊</div>ראשי
         </div>
-        <div class="nav-item" onclick="openAdd()">
-            <div class="nav-icon" style="background: var(--primary); color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);">➕</div>
-            <span style="margin-top: 5px;">הוסף</span>
+        <div class="nav-item" onclick="openModal()" style="transform: translateY(-15px);">
+            <div style="background: var(--brand); color: white; width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);">+</div>
         </div>
-        <div class="nav-item" onclick="nav('tx', this)">
-            <div class="nav-icon">📜</div><span>תנועות</span>
-        </div>
-        <div class="nav-item" onclick="nav('settings', this)">
-            <div class="nav-icon">⚙️</div><span>הגדרות</span>
+        <div class="nav-item" onclick="switchPage('stats', this)">
+            <div class="nav-icon">📁</div>ניהול
         </div>
     </nav>
 
     <script>
-        // אתחול נתונים
-        let db = JSON.parse(localStorage.getItem('fin_pro_db')) || [];
-        let goal = localStorage.getItem('fin_pro_goal') || 5000;
-        let chart;
+        // המוח של האפליקציה (State Management)
+        let appData = JSON.parse(localStorage.getItem('BankProData')) || {
+            transactions: [],
+            budget: 5000
+        };
+
+        const catsOut = {"סופר ומזון": "🛒", "קניות": "🛍️", "חשבונות": "💡", "רכב": "🚗", "פנאי": "🍔", "שונות": "✨"};
+        const catsIn = {"משכורת": "💰", "העברה/מתנה": "🎁", "החזר": "🔄"};
         
-        const catIcons = { "סופר": "🛒", "קניות": "🛍️", "חשבונות": "💡", "רכב": "🚗", "פנאי": "🍔", "שונות": "✨", "משכורת": "💰", "מתנה": "🎁" };
+        let trendChartObj = null;
 
-        // הגדרת ערכת נושא
-        if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
-
-        function toggleTheme() {
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-            updateUI(); // מרענן צבעי גרף
+        // הפעלת האפליקציה
+        function initApp() {
+            updateCategories();
+            calculateAndRender();
         }
 
-        // ניווט בין עמודים
-        function nav(pageId, el) {
-            document.querySelectorAll('.container').forEach(c => c.classList.remove('active-page'));
+        // ניהול עמודים ומודלים
+        function switchPage(page, element) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-' + pageId).classList.add('active-page');
-            if(el) el.classList.add('active');
-            updateUI();
+            document.getElementById('page-' + page).classList.add('active');
+            if(element) element.classList.add('active');
         }
 
-        // ניהול מודל הוספה
-        function openAdd() { document.getElementById('addModal').style.display = 'flex'; updateCats(); }
-        function closeAdd() { document.getElementById('addModal').style.display = 'none'; }
+        function openModal() { document.getElementById('addModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('addModal').style.display = 'none'; }
         
-        function updateCats() {
-            const type = document.getElementById('type').value;
-            const select = document.getElementById('cat');
-            if(type === 'out') {
-                select.innerHTML = `<option value="סופר">סופר ומכולת</option><option value="קניות">קניות וביגוד</option><option value="חשבונות">חשבונות ודיור</option><option value="רכב">רכב ותחבורה</option><option value="פנאי">פנאי ומסעדות</option><option value="שונות">שונות</option>`;
-            } else {
-                select.innerHTML = `<option value="משכורת">משכורת</option><option value="מתנה">העברה/מתנה</option>`;
+        function updateCategories() {
+            const type = document.getElementById('txType').value;
+            const select = document.getElementById('txCat');
+            const options = type === 'out' ? catsOut : catsIn;
+            select.innerHTML = Object.keys(options).map(k => `<option value="${k}">${options[k]} ${k}</option>`).join('');
+        }
+
+        // הוספת נתונים
+        function addTransaction() {
+            const amt = parseFloat(document.getElementById('txAmt').value);
+            const note = document.getElementById('txNote').value;
+            const type = document.getElementById('txType').value;
+            const cat = document.getElementById('txCat').value;
+            
+            if(!amt || !note) return alert('נא למלא סכום ותיאור');
+
+            const newTx = {
+                id: Date.now(),
+                date: new Date().toISOString(), // שמירת תאריך מדויק למגמות
+                amt, note, type, cat
+            };
+
+            appData.transactions.push(newTx);
+            saveData();
+            
+            // ניקוי טופס
+            document.getElementById('txAmt').value = '';
+            document.getElementById('txNote').value = '';
+            closeModal();
+        }
+
+        function saveBudget() {
+            const b = parseFloat(document.getElementById('budgetInput').value);
+            if(b) { appData.budget = b; saveData(); alert('תקציב עודכן'); }
+        }
+
+        function deleteTx(id) {
+            if(confirm('למחוק פעולה זו?')) {
+                appData.transactions = appData.transactions.filter(t => t.id !== id);
+                saveData();
             }
         }
 
-        function saveTx() {
-            const amt = parseFloat(document.getElementById('amt').value);
-            const note = document.getElementById('note').value;
-            if(!amt || !note) return alert('חסרים נתונים');
+        function saveData() {
+            localStorage.setItem('BankProData', JSON.stringify(appData));
+            calculateAndRender();
+        }
+
+        // חישובים ורינדור UI
+        function calculateAndRender() {
+            const now = new Date();
+            const currMonth = now.getMonth();
+            const currYear = now.getFullYear();
             
-            db.push({ id: Date.now(), date: new Date().toLocaleDateString('he-IL'), amt, note, type: document.getElementById('type').value, cat: document.getElementById('cat').value });
-            localStorage.setItem('fin_pro_db', JSON.stringify(db));
+            let incomeTotal = 0, expenseTotal = 0;
+            let listHTML = '';
             
-            document.getElementById('amt').value = ''; document.getElementById('note').value = '';
-            closeAdd(); updateUI();
-        }
-
-        function delTx(id) {
-            if(confirm('למחוק תנועה?')) { db = db.filter(t => t.id !== id); localStorage.setItem('fin_pro_db', JSON.stringify(db)); updateUI(); }
-        }
-
-        function saveGoal() {
-            const g = document.getElementById('setGoal').value;
-            if(g) { goal = g; localStorage.setItem('fin_pro_goal', goal); alert('היעד עודכן!'); updateUI(); }
-        }
-
-        function exportCSV() {
-            let csv = "תאריך,סוג,קטגוריה,תיאור,סכום\n";
-            db.forEach(t => csv += `${t.date},${t.type==='in'?'הכנסה':'הוצאה'},${t.cat},${t.note},${t.amt}\n`);
-            const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob); link.download = "נתוני_תקציב.csv"; link.click();
-        }
-
-        function updateUI() {
-            let total = 0, inMonth = 0, outMonth = 0;
-            const list = document.getElementById('txList'); list.innerHTML = '';
-            const currMonth = new Date().getMonth();
-            let catData = {};
-
-            if(db.length === 0) document.getElementById('txListEmpty').style.display = 'block';
-            else document.getElementById('txListEmpty').style.display = 'none';
-
-            db.slice().reverse().forEach(t => {
-                const isInc = t.type === 'in';
-                total += isInc ? t.amt : -t.amt;
+            // עיבוד תנועות - מסודר מהחדש לישן
+            const sortedTx = [...appData.transactions].sort((a,b) => b.id - a.id);
+            
+            sortedTx.forEach(tx => {
+                const txDate = new Date(tx.date);
+                const isInc = tx.type === 'in';
+                const icon = (isInc ? catsIn[tx.cat] : catsOut[tx.cat]) || '🏷️';
                 
-                const tMonth = new Date(t.id).getMonth();
-                if(tMonth === currMonth) {
-                    if(isInc) inMonth += t.amt;
-                    else { outMonth += t.amt; catData[t.cat] = (catData[t.cat] || 0) + t.amt; }
+                // חישובי חודש נוכחי בלבד ל-Cash Flow
+                if(txDate.getMonth() === currMonth && txDate.getFullYear() === currYear) {
+                    if(isInc) incomeTotal += tx.amt;
+                    else expenseTotal += tx.amt;
                 }
 
-                list.innerHTML += `
+                // בניית הרשימה UI
+                listHTML += `
                     <div class="tx-item">
-                        <div style="display:flex; align-items:center;">
-                            <div class="tx-icon">${catIcons[t.cat] || '🏷️'}</div>
-                            <div style="margin-right:12px;">
-                                <div style="font-weight:bold;">${t.note}</div>
-                                <div style="font-size:12px; color:var(--text-muted);">${t.date}</div>
-                            </div>
+                        <div class="tx-icon" style="background: ${isInc ? 'var(--success-light)' : 'var(--danger-light)'}">${icon}</div>
+                        <div class="tx-details" style="margin-right:15px;">
+                            <div class="tx-title">${tx.note}</div>
+                            <div class="tx-date">${txDate.toLocaleDateString('he-IL')} • ${tx.cat}</div>
                         </div>
                         <div style="text-align:left;">
-                            <div style="font-weight:bold; color:var(--${isInc?'green':'red'});">${isInc?'+':'-'}₪${t.amt}</div>
-                            <div style="font-size:12px; color:var(--red);" onclick="delTx(${t.id})">מחק</div>
+                            <div class="tx-amt" style="color: ${isInc ? 'var(--success)' : 'var(--danger)'}">${isInc ? '+' : '-'}₪${tx.amt.toLocaleString()}</div>
+                            <div style="font-size:12px; color:var(--text-sec); cursor:pointer;" onclick="deleteTx(${tx.id})">מחק</div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
 
-            document.getElementById('balTotal').innerText = '₪' + total.toLocaleString();
-            document.getElementById('balIn').innerText = '₪' + inMonth.toLocaleString();
-            document.getElementById('balOut').innerText = '₪' + outMonth.toLocaleString();
-
-            const prog = Math.min((outMonth / goal) * 100, 100);
-            document.getElementById('goalFill').style.width = prog + '%';
-            document.getElementById('goalFill').style.background = prog > 90 ? 'var(--red)' : 'var(--primary)';
-            document.getElementById('goalText').innerText = Math.round(prog) + '% מהיעד';
-            document.getElementById('setGoal').value = goal;
-
-            // עדכון גרף
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
+            // עדכון משתני UI - Cash Flow
+            const cashFlow = incomeTotal - expenseTotal;
+            document.getElementById('cashFlowTotal').innerText = `₪${cashFlow.toLocaleString()}`;
+            document.getElementById('incomeTotal').innerText = `₪${incomeTotal.toLocaleString()}`;
+            document.getElementById('expenseTotal').innerText = `₪${expenseTotal.toLocaleString()}`;
             
-            if(chart) chart.destroy();
-            chart = new Chart(document.getElementById('chartCat').getContext('2d'), {
-                type: 'doughnut',
-                data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'], borderWidth: isDark? 2 : 0, borderColor: isDark? '#1e293b' : '#fff' }] },
-                options: { cutout: '70%', plugins: { legend: { position: 'left' } } }
+            document.getElementById('transactionsList').innerHTML = listHTML || '<div style="text-align:center; padding: 20px; color: gray;">אין תנועות עדיין</div>';
+            document.getElementById('budgetInput').value = appData.budget;
+
+            // עדכון בר תקציב
+            const budgetUsedPerc = Math.min((expenseTotal / appData.budget) * 100, 100).toFixed(0);
+            const budgetBar = document.getElementById('budgetBar');
+            budgetBar.style.width = `${budgetUsedPerc}%`;
+            document.getElementById('budgetPerc').innerText = `${budgetUsedPerc}%`;
+            document.getElementById('budgetText').innerText = `הוצאת ₪${expenseTotal.toLocaleString()} מתוך ₪${appData.budget.toLocaleString()}`;
+            
+            // שינוי צבע בר תקציב אם חורגים
+            if(budgetUsedPerc < 75) budgetBar.style.background = 'var(--success)';
+            else if(budgetUsedPerc < 90) budgetBar.style.background = '#f59e0b';
+            else budgetBar.style.background = 'var(--danger)';
+
+            renderChart();
+        }
+
+        // בניית גרף מגמות חכם (Trend Analysis)
+        function renderChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if(trendChartObj) trendChartObj.destroy();
+
+            // איסוף הוצאות לפי ימים ב-30 ימים האחרונים
+            const last30Days = {};
+            for(let i=29; i>=0; i--) {
+                let d = new Date(); d.setDate(d.getDate() - i);
+                last30Days[d.toLocaleDateString('he-IL', {day:'numeric', month:'numeric'})] = 0;
+            }
+
+            appData.transactions.forEach(tx => {
+                if(tx.type === 'out') {
+                    const d = new Date(tx.date).toLocaleDateString('he-IL', {day:'numeric', month:'numeric'});
+                    if(last30Days[d] !== undefined) last30Days[d] += tx.amt;
+                }
+            });
+
+            const labels = Object.keys(last30Days);
+            const data = Object.values(last30Days);
+
+            trendChartObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'הוצאות יומיות',
+                        data: data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4, // עושה את הקו עגול ויפה
+                        fill: true,
+                        pointRadius: 0 // מסתיר את הנקודות למראה נקי
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 6, font: {family: 'Heebo'} } },
+                        y: { border: { display: false }, grid: { color: '#e5e7eb' }, ticks: { font: {family: 'Heebo'} } }
+                    }
+                }
             });
         }
 
-        updateCats(); updateUI();
+        // הפעלה ראשונית
+        initApp();
     </script>
 </body>
 </html>
