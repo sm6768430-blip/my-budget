@@ -3,412 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BankPro Ultra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Finance Master AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #f3f4f6; --surface: #ffffff; --text: #111827; --text-sec: #6b7280; 
-            --brand: #0f172a; --brand-light: #e2e8f0; --accent: #3b82f6;
-            --success: #10b981; --success-light: #d1fae5;
-            --danger: #ef4444; --danger-light: #fee2e2;
-            --warning: #f59e0b; --border: #e5e7eb; --radius: 20px;
+            --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; 
+            --text-sec: #94a3b8; --success: #10b981; --danger: #f43f5e; --border: #334155;
         }
         * { box-sizing: border-box; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 90px; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; overflow-x: hidden; }
         
-        /* Layout & Typography */
-        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* AI Cards Custom Style */
+        .ai-card { background: linear-gradient(135deg, #312e81, #1e1b4b); border: 1px solid #4338ca; border-radius: 24px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .ai-card::after { content: "AI"; position: absolute; top: 10px; left: 10px; background: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; }
         
-        .card { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.02); }
-        .label { font-size: 13px; color: var(--text-sec); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
-        .amount-big { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin: 5px 0 15px; }
+        .card { background: var(--surface); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .label { font-size: 13px; color: var(--text-sec); font-weight: 500; margin-bottom: 5px; display: block; }
         
-        /* Progress & Layouts */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .box { padding: 16px; border-radius: 16px; display: flex; flex-direction: column; background: var(--bg); }
+        /* Inputs & Buttons */
+        input, select { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: #0f172a; color: white; font-size: 16px; margin-bottom: 15px; outline: none; }
+        .btn { padding: 18px; border-radius: 18px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 16px; }
+        .btn-ai { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+
+        /* History Items */
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; }
         
-        .progress-wrap { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; margin: 10px 0; }
-        .progress-bar { height: 100%; background: var(--accent); transition: width 0.5s ease, background 0.3s; }
-        
-        /* Transactions List */
-        .search-bar { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 15px; font-size: 15px; outline: none; transition: 0.2s; }
-        .search-bar:focus { border-color: var(--accent); }
-        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
-        .tx-item:last-child { border-bottom: none; }
-        .tx-item:active { opacity: 0.7; }
-        .tx-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; }
-        
-        /* Forms & Buttons */
-        input:not(.search-bar), select { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg); font-size: 16px; margin-bottom: 15px; outline: none; font-weight: 500; }
-        .btn { width: 100%; padding: 16px; border-radius: 14px; background: var(--brand); color: white; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.97); }
-        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
-        
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 10px 10px 25px; box-shadow: 0 -4px 20px rgba(0,0,0,0.04); z-index: 100; border-top: 1px solid var(--border); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sec); font-weight: 600; cursor: pointer; }
-        .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 24px; margin-bottom: 4px; transition: 0.2s; }
-        .nav-item.active .nav-icon { transform: translateY(-2px); }
-        
-        /* Modal & Toast */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--surface); width: 100%; padding: 24px; border-radius: 24px 24px 0 0; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 12px; padding: 16px; position: fixed; z-index: 300; left: 50%; bottom: 100px; transform: translateX(-50%); font-size: 15px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        #toast.show { visibility: visible; animation: fadeinToast 0.5s, fadeoutToast 0.5s 2.5s; }
-        @keyframes fadeinToast { from { bottom: 80px; opacity: 0; } to { bottom: 100px; opacity: 1; } }
-        @keyframes fadeoutToast { from { bottom: 100px; opacity: 1; } to { bottom: 80px; opacity: 0; } }
+        /* Navigation */
+        .nav { position: fixed; bottom: 0; width: 100%; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); }
+        .nav-item { cursor: pointer; text-align: center; color: var(--text-sec); font-size: 12px; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+
+        .fab { background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; position: fixed; bottom: 85px; left: 20px; box-shadow: 0 10px 25px rgba(99,102,241,0.4); border: none; }
     </style>
 </head>
 <body>
 
     <div id="page-home" class="page active">
-        <div class="card" style="background: var(--brand); color: white;">
-            <span class="label" style="color: var(--text-sec);">תזרים מזומנים החודש</span>
-            <div class="amount-big" id="cashFlowTotal">₪0</div>
-            <div class="grid-2">
-                <div class="box" style="background: rgba(255,255,255,0.05);"><span style="font-size: 12px; color:var(--text-sec);">הכנסות</span><span style="font-weight:700; color:var(--success);">₪<span id="incTotal">0</span></span></div>
-                <div class="box" style="background: rgba(255,255,255,0.05);"><span style="font-size: 12px; color:var(--text-sec);">הוצאות</span><span style="font-weight:700; color:var(--danger);">₪<span id="expTotal">0</span></span></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <span class="label">🎯 תחזית וניצול תקציב</span>
-            <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                <span id="budgetUsedText">₪0 / ₪0</span>
-                <span id="budgetPerc">0%</span>
-            </div>
-            <div class="progress-wrap"><div class="progress-bar" id="budgetBar"></div></div>
-            <div style="background: var(--brand-light); padding: 12px; border-radius: 12px; margin-top: 15px; font-size: 13px; font-weight: 500;">
-                💡 <b>תחזית סוף חודש:</b> בקצב הנוכחי תוציא <span id="forecastAmount" style="font-weight:700; color:var(--danger);">₪0</span> עד סוף החודש.
-            </div>
-        </div>
-
-        <div class="card">
-            <span class="label">📈 מגמת הוצאות (30 יום)</span>
-            <canvas id="trendChart" height="150"></canvas>
-        </div>
-    </div>
-
-    <div id="page-analytics" class="page">
-        <div class="card">
-            <span class="label">התפלגות הוצאות (החודש)</span>
-            <canvas id="pieChart" height="220"></canvas>
-        </div>
+        <h1 style="font-weight: 900; margin-bottom: 5px;">היי, מושון</h1>
+        <p style="color: var(--text-sec); margin-bottom: 25px;">הנה מה שהבינה המלאכותית מצאה עבורך:</p>
         
+        <div id="ai-container">
+            <div class="ai-card">
+                <span class="label" style="color: #a5b4fc;">תובנת AI ראשונה</span>
+                <div id="ai-text">מנתח את הרגלי הצריכה שלך...</div>
+            </div>
+        </div>
+
         <div class="card">
-            <span class="label">פירוט קטגוריות החודש</span>
-            <div id="categoryBreakdown"></div>
+            <span class="label">יתרה בתזרים חופשי</span>
+            <div style="font-size: 42px; font-weight: 900; letter-spacing: -1px;" id="balanceDisplay">₪0</div>
+        </div>
+
+        <div class="card">
+            <span class="label">תקציב חודשי: <span id="budgetStatus">0/0</span></span>
+            <div style="height: 10px; background: #334155; border-radius: 5px; margin-top: 10px; overflow: hidden;">
+                <div id="budgetBar" style="height: 100%; background: var(--primary); width: 0%; transition: 0.5s;"></div>
+            </div>
         </div>
     </div>
 
     <div id="page-tx" class="page">
-        <div class="card">
-            <span class="label">היסטוריית פעולות</span>
-            <input type="text" class="search-bar" id="searchInput" placeholder="חיפוש לפי תיאור או קטגוריה..." onkeyup="renderTxList()">
-            <div id="txList"></div>
-        </div>
+        <h2>היסטוריה וחיפוש</h2>
+        <input type="text" id="searchInput" placeholder="חפש תנועה..." onkeyup="renderTx()">
+        <div id="historyList"></div>
     </div>
 
-    <div id="page-settings" class="page">
-        <div class="card">
-            <span class="label">תקציב חודשי כללי</span>
-            <input type="number" id="budgetInput" placeholder="הכנס תקציב (למשל 8000)">
-            <button class="btn" onclick="saveBudget()">עדכן תקציב</button>
-        </div>
-        <div class="card">
-            <span class="label">ניהול נתונים (Export / Import)</span>
-            <button class="btn btn-outline" style="margin-bottom: 10px;" onclick="exportData()">📥 ייצא נתונים (גיבוי)</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-            <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤 ייבא נתונים</button>
-            <p style="font-size: 12px; color: var(--text-sec); margin-top: 10px;">שמור עותק של הנתונים שלך כדי להעביר למכשיר אחר או לגבות את המידע.</p>
-        </div>
-    </div>
-
-    <div id="txModal" class="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 20px;">
-                <h2 id="modalTitle" style="margin:0;">פעולה חדשה</h2>
-                <span onclick="closeModal()" style="font-size: 24px; color: var(--text-sec); cursor:pointer;">✕</span>
-            </div>
-            
-            <input type="hidden" id="txId">
-            <select id="txType" onchange="updateCats()">
-                <option value="out">הוצאה (-)</option>
-                <option value="in">הכנסה (+)</option>
+    <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; padding: 20px;">
+        <div class="card" style="width:100%;">
+            <h3>הוסף פעולה</h3>
+            <input type="number" id="amt" placeholder="סכום">
+            <input type="text" id="note" placeholder="תיאור">
+            <select id="type">
+                <option value="out">הוצאה</option>
+                <option value="in">הכנסה</option>
             </select>
-            <input type="number" id="txAmt" placeholder="סכום (₪)">
-            <input type="text" id="txNote" placeholder="תיאור (למשל: דלק)">
-            <select id="txCat"></select>
-            <input type="date" id="txDate">
-            
-            <div class="grid-2">
-                <button class="btn" style="background: var(--danger); display:none;" id="btnDelete" onclick="deleteTx()">מחק פעולה</button>
-                <button class="btn" style="grid-column: span 2;" id="btnSave" onclick="saveTx()">שמור</button>
-            </div>
+            <button class="btn btn-ai" onclick="saveTx()">שמור במערכת</button>
+            <button class="btn" style="color: var(--text-sec); margin-top: 10px;" onclick="closeModal()">ביטול</button>
         </div>
     </div>
 
-    <div id="toast"></div>
+    <button class="fab" onclick="openModal()">+</button>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="nav('home', this)"><div class="nav-icon">📊</div>ראשי</div>
-        <div class="nav-item" onclick="nav('analytics', this)"><div class="nav-icon">🥧</div>ניתוח</div>
-        <div class="nav-item" onclick="openModal()"><div style="background:var(--accent); color:white; width:48px; height:48px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; transform:translateY(-10px); box-shadow:0 4px 15px rgba(59,130,246,0.4);">+</div></div>
-        <div class="nav-item" onclick="nav('tx', this)"><div class="nav-icon">📜</div>תנועות</div>
-        <div class="nav-item" onclick="nav('settings', this)"><div class="nav-icon">⚙️</div>הגדרות</div>
+    <nav class="nav">
+        <div class="nav-item active" onclick="nav('home', this)">🏠<br>ראשי</div>
+        <div class="nav-item" onclick="nav('tx', this)">📜<br>תנועות</div>
+        <div class="nav-item" onclick="alert('הגדרות בקרוב')">⚙️<br>הגדרות</div>
     </nav>
 
     <script>
-        // Data Structure
-        let db = JSON.parse(localStorage.getItem('BankProUltra')) || { txs: [], budget: 5000 };
-        const catsOut = {"סופר ומזון": "🛒", "קניות": "🛍️", "חשבונות": "💡", "רכב ותחבורה": "🚗", "פנאי ומסעדות": "🍔", "בריאות": "💊", "שונות": "✨"};
-        const catsIn = {"משכורת": "💰", "העברה/מתנה": "🎁", "החזר": "🔄"};
-        let trendChartObj = null, pieChartObj = null;
+        let db = JSON.parse(localStorage.getItem('FinanceAI')) || { txs: [], budget: 4000 };
 
-        function showToast(msg) {
-            const toast = document.getElementById("toast");
-            toast.innerText = msg; toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-        }
-
-        function nav(page, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        function nav(p, el) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-' + page).classList.add('active');
-            if(el) el.classList.add('active');
+            document.getElementById('page-' + p).classList.add('active');
+            el.classList.add('active');
         }
 
-        // Modal Management (Add / Edit)
-        function updateCats() {
-            const type = document.getElementById('txType').value;
-            const select = document.getElementById('txCat');
-            const options = type === 'out' ? catsOut : catsIn;
-            select.innerHTML = Object.keys(options).map(k => `<option value="${k}">${options[k]} ${k}</option>`).join('');
-        }
-
-        function openModal(id = null) {
-            document.getElementById('txModal').style.display = 'flex';
-            updateCats();
-            
-            if(id) { // Edit Mode
-                const tx = db.txs.find(t => t.id === id);
-                document.getElementById('modalTitle').innerText = 'עריכת פעולה';
-                document.getElementById('txId').value = tx.id;
-                document.getElementById('txType').value = tx.type; updateCats();
-                document.getElementById('txAmt').value = tx.amt;
-                document.getElementById('txNote').value = tx.note;
-                document.getElementById('txCat').value = tx.cat;
-                document.getElementById('txDate').value = tx.date.split('T')[0];
-                document.getElementById('btnDelete').style.display = 'block';
-                document.getElementById('btnSave').style.gridColumn = 'span 1';
-            } else { // Add Mode
-                document.getElementById('modalTitle').innerText = 'פעולה חדשה';
-                document.getElementById('txId').value = '';
-                document.getElementById('txAmt').value = '';
-                document.getElementById('txNote').value = '';
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('btnDelete').style.display = 'none';
-                document.getElementById('btnSave').style.gridColumn = 'span 2';
-            }
-        }
-
-        function closeModal() { document.getElementById('txModal').style.display = 'none'; }
+        function openModal() { document.getElementById('modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function saveTx() {
-            const id = document.getElementById('txId').value;
-            const amt = parseFloat(document.getElementById('txAmt').value);
-            const note = document.getElementById('txNote').value;
+            const amt = parseFloat(document.getElementById('amt').value);
+            const note = document.getElementById('note').value;
+            if(!amt || !note) return;
             
-            if(!amt || !note || amt <= 0) return showToast('⚠️ נא להזין סכום תקין ותיאור');
-
-            const txData = {
-                id: id ? parseInt(id) : Date.now(),
-                date: document.getElementById('txDate').value + 'T12:00:00Z',
+            db.txs.push({
+                id: Date.now(),
                 amt, note,
-                type: document.getElementById('txType').value,
-                cat: document.getElementById('txCat').value
-            };
+                type: document.getElementById('type').value,
+                date: new Date()
+            });
+            localStorage.setItem('FinanceAI', JSON.stringify(db));
+            closeModal();
+            refresh();
+        }
 
-            if(id) {
-                const idx = db.txs.findIndex(t => t.id === parseInt(id));
-                db.txs[idx] = txData;
-                showToast('✅ הפעולה עודכנה בהצלחה');
+        // --- מנוע ה-AI ---
+        function runAI() {
+            if(db.txs.length < 3) return "המשך להזין נתונים כדי שה-AI יוכל לנתח את ההרגלים שלך.";
+            
+            const expenses = db.txs.filter(t => t.type === 'out');
+            const totalExp = expenses.reduce((s, t) => s + t.amt, 0);
+            
+            // 1. זיהוי יום עמוס
+            const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+            const dayStats = [0,0,0,0,0,0,0];
+            expenses.forEach(t => dayStats[new Date(t.date).getDay()] += t.amt);
+            const peakDay = days[dayStats.indexOf(Math.max(...dayStats))];
+
+            // 2. חיזוי סוף חודש
+            const dayOfMonth = new Date().getDate();
+            const forecast = (totalExp / dayOfMonth) * 30;
+
+            // 3. תובנה חכמה
+            let insight = `נראה שיום **${peakDay}** הוא היום "היקר" ביותר שלך בשבוע. <br><br>`;
+            if(forecast > db.budget) {
+                insight += `⚠️ **אזהרת תקציב:** בקצב הזה תסיים את החודש עם הוצאות של ₪${Math.round(forecast)}. כדאי לצמצם ₪${Math.round((forecast - db.budget)/ (31-dayOfMonth))} ליום.`;
             } else {
-                db.txs.push(txData);
-                showToast('✅ פעולה חדשה נשמרה');
+                insight += `✅ אתה עומד ביעדים! התחזית לסוף החודש היא ₪${Math.round(forecast)}.`;
             }
-            
-            saveDb(); closeModal();
+            return insight;
         }
 
-        function deleteTx() {
-            const id = parseInt(document.getElementById('txId').value);
-            if(confirm('בטוח שברצונך למחוק פעולה זו?')) {
-                db.txs = db.txs.filter(t => t.id !== id);
-                saveDb(); closeModal(); showToast('🗑️ הפעולה נמחקה');
-            }
-        }
-
-        function saveBudget() {
-            const b = parseFloat(document.getElementById('budgetInput').value);
-            if(b && b > 0) { db.budget = b; saveDb(); showToast('🎯 התקציב עודכן בהצלחה'); }
-        }
-
-        function saveDb() { localStorage.setItem('BankProUltra', JSON.stringify(db)); calculateApp(); }
-
-        // Core Calculation Engine
-        function calculateApp() {
-            const now = new Date();
-            const currMonth = now.getMonth(); const currYear = now.getFullYear();
-            
-            let incMonth = 0, expMonth = 0;
-            const catStats = {};
-
-            // Calculate month totals & categories
-            db.txs.forEach(tx => {
-                const d = new Date(tx.date);
-                if(d.getMonth() === currMonth && d.getFullYear() === currYear) {
-                    if(tx.type === 'in') incMonth += tx.amt;
-                    else {
-                        expMonth += tx.amt;
-                        catStats[tx.cat] = (catStats[tx.cat] || 0) + tx.amt;
-                    }
-                }
+        function refresh() {
+            let balance = 0;
+            let spent = 0;
+            db.txs.forEach(t => {
+                if(t.type === 'in') balance += t.amt;
+                else { balance -= t.amt; spent += t.amt; }
             });
 
-            // Update Home Dashboard
-            document.getElementById('cashFlowTotal').innerText = `₪${(incMonth - expMonth).toLocaleString()}`;
-            document.getElementById('incTotal').innerText = incMonth.toLocaleString();
-            document.getElementById('expTotal').innerText = expMonth.toLocaleString();
-
-            // Budget Progress
-            const perc = Math.min((expMonth / db.budget) * 100, 100);
-            const bar = document.getElementById('budgetBar');
-            bar.style.width = `${perc}%`;
-            bar.style.background = perc < 75 ? 'var(--success)' : (perc < 90 ? 'var(--warning)' : 'var(--danger)');
-            document.getElementById('budgetPerc').innerText = `${perc.toFixed(0)}%`;
-            document.getElementById('budgetUsedText').innerText = `₪${expMonth.toLocaleString()} / ₪${db.budget.toLocaleString()}`;
-            document.getElementById('budgetInput').value = db.budget;
-
-            // Forecast Algorithm (Smart Analysis)
-            const daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
-            const currentDay = now.getDate();
-            const dailyPace = expMonth / currentDay;
-            const forecast = Math.round(dailyPace * daysInMonth);
-            document.getElementById('forecastAmount').innerText = `₪${forecast.toLocaleString()}`;
-
-            renderTxList();
-            renderCharts(catStats);
+            document.getElementById('balanceDisplay').innerText = `₪${balance.toLocaleString()}`;
+            document.getElementById('budgetStatus').innerText = `₪${spent} / ₪${db.budget}`;
+            document.getElementById('budgetBar').style.width = Math.min((spent/db.budget)*100, 100) + '%';
+            document.getElementById('ai-text').innerHTML = runAI();
+            renderTx();
         }
 
-        function renderTxList() {
+        function renderTx() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const list = document.getElementById('txList');
-            list.innerHTML = '';
-            
-            const sorted = [...db.txs].sort((a,b) => new Date(b.date) - new Date(a.date));
-            const filtered = sorted.filter(t => t.note.toLowerCase().includes(query) || t.cat.toLowerCase().includes(query));
-
-            if(filtered.length === 0) return list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sec);">לא נמצאו תנועות</div>';
-
-            filtered.forEach(tx => {
-                const isInc = tx.type === 'in';
-                const icon = (isInc ? catsIn[tx.cat] : catsOut[tx.cat]) || '🏷️';
-                const d = new Date(tx.date).toLocaleDateString('he-IL');
-                
-                list.innerHTML += `
-                    <div class="tx-item" onclick="openModal(${tx.id})">
-                        <div style="display:flex; align-items:center;">
-                            <div class="tx-icon" style="background: ${isInc ? 'var(--success-light)' : 'var(--danger-light)'}">${icon}</div>
-                            <div style="margin-right:12px;">
-                                <div style="font-weight:700;">${tx.note}</div>
-                                <div style="font-size:12px; color:var(--text-sec);">${d} • ${tx.cat}</div>
-                            </div>
+            const html = db.txs
+                .filter(t => t.note.toLowerCase().includes(query))
+                .sort((a,b) => b.id - a.id)
+                .map(t => `
+                    <div class="tx-item">
+                        <div>
+                            <div style="font-weight:700;">${t.note}</div>
+                            <div style="font-size:12px; color:var(--text-sec);">${new Date(t.date).toLocaleDateString()}</div>
                         </div>
-                        <div style="font-weight:800; font-size:16px; color: ${isInc ? 'var(--success)' : 'var(--text)'}">
-                            ${isInc ? '+' : '-'}₪${tx.amt.toLocaleString()}
+                        <div style="color: ${t.type === 'in' ? 'var(--success)' : 'var(--danger)'}; font-weight:900;">
+                            ${t.type === 'in' ? '+' : '-'}₪${t.amt}
                         </div>
-                    </div>`;
-            });
-        }
-
-        function renderCharts(catStats) {
-            Chart.defaults.font.family = 'Heebo';
-            
-            // 1. Trend Chart (30 Days)
-            const last30 = {};
-            for(let i=29; i>=0; i--) {
-                let d = new Date(); d.setDate(d.getDate() - i);
-                last30[d.toLocaleDateString('he-IL', {day:'numeric', month:'numeric'})] = 0;
-            }
-            db.txs.filter(t => t.type === 'out').forEach(t => {
-                const d = new Date(t.date).toLocaleDateString('he-IL', {day:'numeric', month:'numeric'});
-                if(last30[d] !== undefined) last30[d] += t.amt;
-            });
-
-            if(trendChartObj) trendChartObj.destroy();
-            trendChartObj = new Chart(document.getElementById('trendChart'), {
-                type: 'line',
-                data: { labels: Object.keys(last30), datasets: [{ data: Object.values(last30), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 0 }] },
-                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
-
-            // 2. Pie Chart (Categories)
-            const catLabels = Object.keys(catStats);
-            const catData = Object.values(catStats);
-            const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
-
-            if(pieChartObj) pieChartObj.destroy();
-            pieChartObj = new Chart(document.getElementById('pieChart'), {
-                type: 'doughnut',
-                data: { labels: catLabels, datasets: [{ data: catData, backgroundColor: colors, borderWidth: 0 }] },
-                options: { cutout: '70%', plugins: { legend: { position: 'left', labels: { boxWidth: 12 } } } }
-            });
-
-            // 3. Category Breakdown UI
-            let catHTML = '';
-            const totalExp = catData.reduce((a,b)=>a+b, 0);
-            catLabels.forEach((cat, idx) => {
-                const perc = totalExp ? Math.round((catStats[cat]/totalExp)*100) : 0;
-                catHTML += `
-                <div style="margin-bottom: 12px;">
-                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:5px;">
-                        <span>${catsOut[cat]||'🏷️'} ${cat}</span><span>₪${catStats[cat].toLocaleString()} (${perc}%)</span>
                     </div>
-                    <div class="progress-wrap" style="height:6px; margin:0;"><div class="progress-bar" style="width:${perc}%; background:${colors[idx%colors.length]}"></div></div>
-                </div>`;
-            });
-            document.getElementById('categoryBreakdown').innerHTML = catHTML || '<div style="color:var(--text-sec); font-size:13px;">אין נתונים לחודש זה</div>';
+                `).join('');
+            document.getElementById('historyList').innerHTML = html;
         }
 
-        // Data Backup functions
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-            const a = document.createElement('a'); a.href = dataStr; a.download = `BankPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click(); showToast('📥 קובץ הגיבוי הורד בהצלחה');
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    db = JSON.parse(e.target.result);
-                    saveDb(); showToast('📤 הנתונים שוחזרו בהצלחה!');
-                } catch(err) { showToast('❌ שגיאה בקריאת הקובץ'); }
-            };
-            reader.readAsText(file);
-        }
-
-        // Init
-        calculateApp();
+        refresh();
     </script>
 </body>
 </html>
