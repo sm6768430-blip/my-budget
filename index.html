@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #6366f1; --bg: #f8fafc; --text: #1e293b; --card: #ffffff; --red: #ef4444; --green: #10b981; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); margin: 0; padding: 16px; color: var(--text); }
+        .card { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        .balance-label { font-size: 14px; color: #64748b; font-weight: 500; }
+        .balance-val { font-size: 38px; font-weight: 800; margin: 8px 0; letter-spacing: -1px; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; }
+        input, select { background: #f1f5f9; border: none; padding: 16px; border-radius: 16px; font-size: 16px; outline: none; }
+        button { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; transition: transform 0.2s; }
+        button:active { transform: scale(0.96); }
+        .tx-list { margin-top: 24px; }
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: white; border-radius: 20px; margin-bottom: 10px; border-right: 5px solid #e2e8f0; }
+        .tx-info { display: flex; flex-direction: column; }
+        .tx-name { font-weight: 600; font-size: 16px; }
+        .tx-date { font-size: 12px; color: #94a3b8; }
+        .tx-amt { font-weight: 800; font-size: 16px; }
+        .expense { border-right-color: var(--red); color: var(--red); }
+        .income { border-right-color: var(--green); color: var(--green); }
+        canvas { margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="balance-label">יתרה כוללת</div>
+        <div class="balance-val" id="totalBalance">₪0</div>
+        <canvas id="myChart" height="100"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="input-group">
+            <input type="number" id="amt" placeholder="סכום" inputmode="decimal">
+            <input type="text" id="note" placeholder="תיאור (למשל: סופר)">
+            <select id="type">
+                <option value="out">📉 הוצאה</option>
+                <option value="in">📈 הכנסה</option>
+            </select>
+            <button onclick="saveData()">הוסף תנועה</button>
+        </div>
+    </div>
+
+    <div class="tx-list" id="txList"></div>
+
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('finance_data')) || [];
+        let chart;
+
+        function initChart() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)' }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+            });
+        }
+
+        function updateUI() {
+            const list = document.getElementById('txList');
+            list.innerHTML = '';
+            let total = 0;
+            let history = [];
+
+            transactions.forEach((t, i) => {
+                const isInc = t.type === 'in';
+                total += isInc ? t.amt : -t.amt;
+                history.push(total);
+
+                list.innerHTML = `
+                    <div class="tx-item ${isInc ? 'income' : 'expense'}">
+                        <div class="tx-info">
+                            <span class="tx-name">${t.note}</span>
+                            <span class="tx-date">${t.date}</span>
+                        </div>
+                        <span class="tx-amt">${isInc ? '+' : '-'}₪${t.amt}</span>
+                    </div>
+                ` + list.innerHTML;
+            });
+
+            document.getElementById('totalBalance').innerText = '₪' + total.toLocaleString();
+            chart.data.labels = history.map((_, i) => i);
+            chart.data.datasets[0].data = history;
+            chart.update();
+            localStorage.setItem('finance_data', JSON.stringify(transactions));
+        }
+
+        function saveData() {
+            const amt = parseFloat(document.getElementById('amt').value);
+            const note = document.getElementById('note').value;
+            const type = document.getElementById('type').value;
+
+            if(!amt || !note) return;
+
+            transactions.push({ amt, note, type, date: new Date().toLocaleDateString('he-IL') });
+            document.getElementById('amt').value = '';
+            document.getElementById('note').value = '';
+            updateUI();
+        }
+
+        initChart();
+        updateUI();
+    </script>
+</body>
+</html>
