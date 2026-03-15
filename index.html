@@ -6,104 +6,201 @@
     <title>Finance Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --text: #1e293b; --card: #ffffff; --red: #ef4444; --green: #10b981; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); margin: 0; padding: 16px; color: var(--text); }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 16px; }
-        .balance-label { font-size: 14px; color: #64748b; font-weight: 500; }
-        .balance-val { font-size: 38px; font-weight: 800; margin: 8px 0; letter-spacing: -1px; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #0f172a; --card: #ffffff; --red: #ef4444; --green: #10b981; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 16px; color: var(--text); padding-bottom: 50px; }
+        .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 16px; border: 1px solid #f1f5f9; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 14px; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+        .val { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
         .input-group { display: flex; flex-direction: column; gap: 12px; }
-        input, select { background: #f1f5f9; border: none; padding: 16px; border-radius: 16px; font-size: 16px; outline: none; }
-        button { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; transition: transform 0.2s; }
-        button:active { transform: scale(0.96); }
-        .tx-list { margin-top: 24px; }
-        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: white; border-radius: 20px; margin-bottom: 10px; border-right: 5px solid #e2e8f0; }
+        input, select { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 14px; font-size: 16px; outline: none; transition: 0.2s; font-family: inherit; }
+        input:focus, select:focus { border-color: var(--primary); background: white; }
+        button { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+        button:active { opacity: 0.8; }
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
+        .tx-item:last-child { border-bottom: none; }
         .tx-info { display: flex; flex-direction: column; }
-        .tx-name { font-weight: 600; font-size: 16px; }
-        .tx-date { font-size: 12px; color: #94a3b8; }
-        .tx-amt { font-weight: 800; font-size: 16px; }
-        .expense { border-right-color: var(--red); color: var(--red); }
-        .income { border-right-color: var(--green); color: var(--green); }
-        canvas { margin-top: 10px; }
+        .tx-cat { font-size: 12px; color: #475569; background: #e2e8f0; padding: 4px 10px; border-radius: 12px; width: fit-content; margin-top: 6px; font-weight: 500; }
+        .del-btn { color: #cbd5e1; background: none; border: none; padding: 0 0 0 15px; font-size: 22px; cursor: pointer; width: auto; }
+        .del-btn:active { color: var(--red); }
+        .progress-bg { background: #e2e8f0; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.5s ease-out, background-color 0.3s; }
+        .goal-input { display: flex; gap: 10px; margin-top: 15px; }
+        .goal-input input { flex: 1; padding: 12px; }
+        .goal-input button { padding: 12px 20px; font-size: 14px; background: #475569; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <div class="balance-label">יתרה כוללת</div>
-        <div class="balance-val" id="totalBalance">₪0</div>
-        <canvas id="myChart" height="100"></canvas>
+        <div class="title">יתרה כוללת בארנק</div>
+        <div class="val" id="totalBalance">₪0</div>
     </div>
 
     <div class="card">
-        <div class="input-group">
-            <input type="number" id="amt" placeholder="סכום" inputmode="decimal">
-            <input type="text" id="note" placeholder="תיאור (למשל: סופר)">
-            <select id="type">
-                <option value="out">📉 הוצאה</option>
-                <option value="in">📈 הכנסה</option>
-            </select>
-            <button onclick="saveData()">הוסף תנועה</button>
+        <div class="flex-between">
+            <div class="title">הוצאות החודש מול יעד</div>
+            <div class="title" id="goalText" style="color: var(--text);">₪0 / ₪0</div>
+        </div>
+        <div class="progress-bg"><div class="progress-fill" id="goalProgress"></div></div>
+        <div class="goal-input">
+            <input type="number" id="goalAmt" placeholder="הגדר יעד חדש (₪)" inputmode="numeric">
+            <button onclick="setGoal()">עדכן יעד</button>
         </div>
     </div>
 
-    <div class="tx-list" id="txList"></div>
+    <div class="card">
+        <div class="title">לאן הלך הכסף החודש?</div>
+        <canvas id="catChart" height="220"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="title">רישום תנועה חדשה</div>
+        <div class="input-group">
+            <input type="number" id="amt" placeholder="סכום (₪)" inputmode="decimal">
+            <input type="text" id="note" placeholder="תיאור (למשל: סופר פארם)">
+            <select id="type" onchange="toggleCats()">
+                <option value="out">📉 הוצאה (מינוס)</option>
+                <option value="in">📈 הכנסה (פלוס)</option>
+            </select>
+            <select id="cat">
+                </select>
+            <button onclick="saveData()">שמור נתונים</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="title">היסטוריית תנועות</div>
+        <div id="txList"></div>
+    </div>
 
     <script>
-        let transactions = JSON.parse(localStorage.getItem('finance_data')) || [];
-        let chart;
+        // Database logic
+        let db = JSON.parse(localStorage.getItem('finance_db_v3')) || [];
+        let goal = localStorage.getItem('finance_goal') || 3000;
+        let chartInstance = null;
 
-        function initChart() {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)' }] },
-                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
+        // Dynamic categories
+        function toggleCats() {
+            const type = document.getElementById('type').value;
+            const outCats = `<option value="אוכל וסופר">🛒 אוכל וסופר</option><option value="קניות חודשיות">🛍️ קניות וביגוד</option><option value="חשבונות">💡 חשבונות ודיור</option><option value="רכב ותחבורה">🚗 רכב ותחבורה</option><option value="פנאי ומסעדות">🍔 פנאי ומסעדות</option><option value="שונות">✨ שונות</option>`;
+            const inCats = `<option value="משכורת">💰 משכורת</option><option value="העברה או מתנה">🎁 העברה או מתנה</option>`;
+            document.getElementById('cat').innerHTML = type === 'out' ? outCats : inCats;
+        }
+
+        function setGoal() {
+            const g = document.getElementById('goalAmt').value;
+            if(g) { 
+                goal = g; 
+                localStorage.setItem('finance_goal', goal); 
+                updateUI(); 
+                document.getElementById('goalAmt').value = '';
+            }
+        }
+
+        function deleteTx(id) {
+            if(confirm('למחוק את התנועה הזו?')) {
+                db = db.filter(t => t.id !== id);
+                updateUI();
+            }
         }
 
         function updateUI() {
+            localStorage.setItem('finance_db_v3', JSON.stringify(db));
             const list = document.getElementById('txList');
             list.innerHTML = '';
-            let total = 0;
-            let history = [];
+            
+            let balance = 0;
+            let monthExpenses = 0;
+            let catData = {};
 
-            transactions.forEach((t, i) => {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            // Reverse to show newest first
+            db.slice().reverse().forEach(t => {
                 const isInc = t.type === 'in';
-                total += isInc ? t.amt : -t.amt;
-                history.push(total);
+                balance += isInc ? t.amt : -t.amt;
 
-                list.innerHTML = `
-                    <div class="tx-item ${isInc ? 'income' : 'expense'}">
-                        <div class="tx-info">
-                            <span class="tx-name">${t.note}</span>
-                            <span class="tx-date">${t.date}</span>
+                const tDate = new Date(t.id);
+                // Calculate only current month for goals and charts
+                if(tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
+                    if(!isInc) {
+                        monthExpenses += t.amt;
+                        catData[t.cat] = (catData[t.cat] || 0) + t.amt;
+                    }
+                }
+
+                list.innerHTML += `
+                    <div class="tx-item">
+                        <div style="display:flex; align-items:center;">
+                            <button class="del-btn" onclick="deleteTx(${t.id})">×</button>
+                            <div class="tx-info">
+                                <strong style="font-size:16px;">${t.note}</strong>
+                                <span class="tx-cat">${t.cat}</span>
+                            </div>
                         </div>
-                        <span class="tx-amt">${isInc ? '+' : '-'}₪${t.amt}</span>
+                        <strong style="font-size:18px; color: var(--${isInc ? 'green' : 'red'})">${isInc ? '+' : '-'}₪${t.amt}</strong>
                     </div>
-                ` + list.innerHTML;
+                `;
             });
 
-            document.getElementById('totalBalance').innerText = '₪' + total.toLocaleString();
-            chart.data.labels = history.map((_, i) => i);
-            chart.data.datasets[0].data = history;
-            chart.update();
-            localStorage.setItem('finance_data', JSON.stringify(transactions));
+            document.getElementById('totalBalance').innerText = '₪' + balance.toLocaleString();
+            
+            // Goal Logic
+            document.getElementById('goalText').innerText = `₪${monthExpenses.toLocaleString()} / ₪${parseFloat(goal).toLocaleString()}`;
+            let progress = Math.min((monthExpenses / goal) * 100, 100);
+            let progBar = document.getElementById('goalProgress');
+            progBar.style.width = progress + '%';
+            progBar.style.backgroundColor = progress >= 90 ? 'var(--red)' : 'var(--primary)';
+
+            // Chart Logic
+            const ctx = document.getElementById('catChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            
+            const labels = Object.keys(catData);
+            const data = Object.values(catData);
+            const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'];
+
+            if(data.length > 0) {
+                chartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+                    options: { 
+                        plugins: { legend: { position: 'left', labels: { font: { family: 'inherit', size: 12 }, usePointStyle: true, boxWidth: 8 } } }, 
+                        cutout: '75%',
+                        layout: { padding: 10 }
+                    }
+                });
+            } else {
+                // Empty state for chart
+                chartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: ['אין הוצאות החודש'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }] },
+                    options: { plugins: { legend: { display: false } }, cutout: '75%' }
+                });
+            }
         }
 
         function saveData() {
             const amt = parseFloat(document.getElementById('amt').value);
             const note = document.getElementById('note').value;
             const type = document.getElementById('type').value;
+            const cat = document.getElementById('cat').value;
 
-            if(!amt || !note) return;
+            if(!amt || !note) {
+                alert('חסרים פרטים. יש להזין סכום ותיאור.');
+                return;
+            }
 
-            transactions.push({ amt, note, type, date: new Date().toLocaleDateString('he-IL') });
+            db.push({ id: Date.now(), amt, note, type, cat });
+            
             document.getElementById('amt').value = '';
             document.getElementById('note').value = '';
             updateUI();
         }
 
-        initChart();
+        toggleCats();
         updateUI();
     </script>
 </body>
