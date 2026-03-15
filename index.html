@@ -3,99 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Master AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <title>Finance Master Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; 
-            --text-sec: #94a3b8; --success: #10b981; --danger: #f43f5e; --border: #334155;
+            --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --text-sec: #64748b; 
+            --accent: #6366f1; --success: #10b981; --danger: #f43f5e; --border: #e2e8f0;
         }
-        * { box-sizing: border-box; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; overflow-x: hidden; }
+        * { box-sizing: border-box; font-family: 'Heebo', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; }
         
-        .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .page { display: none; padding: 20px; animation: slideIn 0.3s ease-out; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* AI Cards Custom Style */
-        .ai-card { background: linear-gradient(135deg, #312e81, #1e1b4b); border: 1px solid #4338ca; border-radius: 24px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .ai-card::after { content: "AI"; position: absolute; top: 10px; left: 10px; background: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; }
+        .card { background: var(--surface); border-radius: 24px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
+        .label { font-size: 14px; color: var(--text-sec); font-weight: 500; margin-bottom: 8px; display: block; }
         
-        .card { background: var(--surface); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .label { font-size: 13px; color: var(--text-sec); font-weight: 500; margin-bottom: 5px; display: block; }
-        
-        /* Inputs & Buttons */
-        input, select { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: #0f172a; color: white; font-size: 16px; margin-bottom: 15px; outline: none; }
-        .btn { padding: 18px; border-radius: 18px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 16px; }
-        .btn-ai { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+        /* Stats & Progress */
+        .cat-budget-item { margin-bottom: 15px; }
+        .progress-container { background: #f1f5f9; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-bar { height: 100%; transition: width 0.5s ease; }
 
-        /* History Items */
-        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; }
-        
-        /* Navigation */
-        .nav { position: fixed; bottom: 0; width: 100%; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); }
-        .nav-item { cursor: pointer; text-align: center; color: var(--text-sec); font-size: 12px; }
-        .nav-item.active { color: var(--primary); font-weight: 700; }
+        /* Inputs & Filters */
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); font-size: 15px; outline: none; }
+        input:focus { border-color: var(--accent); }
 
-        .fab { background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; position: fixed; bottom: 85px; left: 20px; box-shadow: 0 10px 25px rgba(99,102,241,0.4); border: none; }
+        .btn { padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-outline { background: white; border: 2px solid var(--border); color: var(--text); }
+
+        /* Nav */
+        .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        .nav-item { cursor: pointer; text-align: center; color: var(--text-sec); font-size: 12px; font-weight: 600; }
+        .nav-item.active { color: var(--accent); }
+
+        /* Floating Add */
+        .add-btn { background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; position: absolute; bottom: 80px; left: 20px; box-shadow: 0 10px 25px rgba(99,102,241,0.4); }
     </style>
 </head>
 <body>
 
     <div id="page-home" class="page active">
-        <h1 style="font-weight: 900; margin-bottom: 5px;">היי, מושון</h1>
-        <p style="color: var(--text-sec); margin-bottom: 25px;">הנה מה שהבינה המלאכותית מצאה עבורך:</p>
+        <h2 style="margin-bottom: 25px;">היי, הנה מצבך הפיננסי 👋</h2>
         
-        <div id="ai-container">
-            <div class="ai-card">
-                <span class="label" style="color: #a5b4fc;">תובנת AI ראשונה</span>
-                <div id="ai-text">מנתח את הרגלי הצריכה שלך...</div>
-            </div>
+        <div class="card" style="background: linear-gradient(135deg, #4338ca, #6366f1); color: white;">
+            <span class="label" style="color: #c7d2fe;">תזרים חופשי החודש</span>
+            <div style="font-size: 36px; font-weight: 900;" id="mainCashFlow">₪0</div>
         </div>
 
         <div class="card">
-            <span class="label">יתרה בתזרים חופשי</span>
-            <div style="font-size: 42px; font-weight: 900; letter-spacing: -1px;" id="balanceDisplay">₪0</div>
-        </div>
-
-        <div class="card">
-            <span class="label">תקציב חודשי: <span id="budgetStatus">0/0</span></span>
-            <div style="height: 10px; background: #334155; border-radius: 5px; margin-top: 10px; overflow: hidden;">
-                <div id="budgetBar" style="height: 100%; background: var(--primary); width: 0%; transition: 0.5s;"></div>
-            </div>
+            <span class="label">ניצול תקציב לפי קטגוריות</span>
+            <div id="categoryBudgets"></div>
         </div>
     </div>
 
     <div id="page-tx" class="page">
-        <h2>היסטוריה וחיפוש</h2>
-        <input type="text" id="searchInput" placeholder="חפש תנועה..." onkeyup="renderTx()">
-        <div id="historyList"></div>
+        <div class="card">
+            <span class="label">חיפוש וסינון מתקדם</span>
+            <input type="text" id="searchTx" placeholder="חפש תיאור..." onkeyup="refreshUI()">
+            <div class="filter-grid" style="margin-top:10px;">
+                <input type="date" id="filterFrom" onchange="refreshUI()">
+                <input type="date" id="filterTo" onchange="refreshUI()">
+            </div>
+            <button class="btn btn-outline" onclick="exportToCSV()">📄 ייצא דוח CSV (אקסל)</button>
+        </div>
+        <div id="txHistory"></div>
     </div>
 
-    <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; padding: 20px;">
-        <div class="card" style="width:100%;">
-            <h3>הוסף פעולה</h3>
-            <input type="number" id="amt" placeholder="סכום">
-            <input type="text" id="note" placeholder="תיאור">
-            <select id="type">
-                <option value="out">הוצאה</option>
-                <option value="in">הכנסה</option>
-            </select>
-            <button class="btn btn-ai" onclick="saveTx()">שמור במערכת</button>
-            <button class="btn" style="color: var(--text-sec); margin-top: 10px;" onclick="closeModal()">ביטול</button>
+    <div id="page-settings" class="page">
+        <div class="card">
+            <h3>ניהול קטגוריות ותקציבים</h3>
+            <div id="manageCatsList"></div>
+            <hr style="opacity: 0.1; margin: 20px 0;">
+            <span class="label">הוסף קטגוריה חדשה</span>
+            <div class="filter-grid">
+                <input type="text" id="newCatName" placeholder="שם (למשל: בילויים)">
+                <input type="number" id="newCatBudget" placeholder="תקציב (₪)">
+            </div>
+            <button class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</button>
         </div>
     </div>
 
-    <button class="fab" onclick="openModal()">+</button>
+    <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:flex-end;">
+        <div class="card" style="width:100%; border-radius: 30px 30px 0 0; margin:0; padding-bottom: 40px;">
+            <div style="display:flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2 style="margin:0;">פעולה חדשה</h2>
+                <span onclick="closeModal()" style="font-size: 24px; cursor:pointer;">✕</span>
+            </div>
+            <input type="number" id="amt" placeholder="סכום (₪)">
+            <input type="text" id="note" placeholder="תיאור">
+            <select id="catSelect"></select>
+            <select id="typeSelect">
+                <option value="out">הוצאה (-)</option>
+                <option value="in">הכנסה (+)</option>
+            </select>
+            <button class="btn btn-primary" onclick="saveTx()">שמור פעולה</button>
+        </div>
+    </div>
+
+    <div class="add-btn" onclick="openModal()">+</div>
 
     <nav class="nav">
         <div class="nav-item active" onclick="nav('home', this)">🏠<br>ראשי</div>
         <div class="nav-item" onclick="nav('tx', this)">📜<br>תנועות</div>
-        <div class="nav-item" onclick="alert('הגדרות בקרוב')">⚙️<br>הגדרות</div>
+        <div class="nav-item" onclick="nav('settings', this)">⚙️<br>הגדרות</div>
     </nav>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('FinanceAI')) || { txs: [], budget: 4000 };
+        // State Management
+        let data = JSON.parse(localStorage.getItem('FinanceMasterV3')) || {
+            txs: [],
+            categories: [
+                {name: "מזון", budget: 1500, icon: "🛒"},
+                {name: "חשבונות", budget: 2000, icon: "💡"},
+                {name: "תחבורה", budget: 800, icon: "🚗"}
+            ]
+        };
 
         function nav(p, el) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -104,87 +130,120 @@
             el.classList.add('active');
         }
 
-        function openModal() { document.getElementById('modal').style.display = 'flex'; }
+        function openModal() {
+            const sel = document.getElementById('catSelect');
+            sel.innerHTML = data.categories.map(c => `<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
+            document.getElementById('modal').style.display = 'flex';
+        }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function saveTx() {
             const amt = parseFloat(document.getElementById('amt').value);
             const note = document.getElementById('note').value;
             if(!amt || !note) return;
-            
-            db.txs.push({
+
+            data.txs.push({
                 id: Date.now(),
                 amt, note,
-                type: document.getElementById('type').value,
-                date: new Date()
+                cat: document.getElementById('catSelect').value,
+                type: document.getElementById('typeSelect').value,
+                date: new Date().toISOString()
             });
-            localStorage.setItem('FinanceAI', JSON.stringify(db));
-            closeModal();
-            refresh();
+            save(); closeModal();
         }
 
-        // --- מנוע ה-AI ---
-        function runAI() {
-            if(db.txs.length < 3) return "המשך להזין נתונים כדי שה-AI יוכל לנתח את ההרגלים שלך.";
-            
-            const expenses = db.txs.filter(t => t.type === 'out');
-            const totalExp = expenses.reduce((s, t) => s + t.amt, 0);
-            
-            // 1. זיהוי יום עמוס
-            const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-            const dayStats = [0,0,0,0,0,0,0];
-            expenses.forEach(t => dayStats[new Date(t.date).getDay()] += t.amt);
-            const peakDay = days[dayStats.indexOf(Math.max(...dayStats))];
-
-            // 2. חיזוי סוף חודש
-            const dayOfMonth = new Date().getDate();
-            const forecast = (totalExp / dayOfMonth) * 30;
-
-            // 3. תובנה חכמה
-            let insight = `נראה שיום **${peakDay}** הוא היום "היקר" ביותר שלך בשבוע. <br><br>`;
-            if(forecast > db.budget) {
-                insight += `⚠️ **אזהרת תקציב:** בקצב הזה תסיים את החודש עם הוצאות של ₪${Math.round(forecast)}. כדאי לצמצם ₪${Math.round((forecast - db.budget)/ (31-dayOfMonth))} ליום.`;
-            } else {
-                insight += `✅ אתה עומד ביעדים! התחזית לסוף החודש היא ₪${Math.round(forecast)}.`;
-            }
-            return insight;
+        function addNewCategory() {
+            const name = document.getElementById('newCatName').value;
+            const budget = parseFloat(document.getElementById('newCatBudget').value);
+            if(!name || !budget) return;
+            data.categories.push({name, budget, icon: "✨"});
+            save();
+            document.getElementById('newCatName').value = '';
+            document.getElementById('newCatBudget').value = '';
         }
 
-        function refresh() {
-            let balance = 0;
-            let spent = 0;
-            db.txs.forEach(t => {
-                if(t.type === 'in') balance += t.amt;
-                else { balance -= t.amt; spent += t.amt; }
+        function exportToCSV() {
+            let csv = "תאריך,תיאור,קטגוריה,סכום,סוג\n";
+            data.txs.forEach(t => {
+                csv += `${new Date(t.date).toLocaleDateString()},${t.note},${t.cat},${t.amt},${t.type}\n`;
+            });
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Finance_Report.csv";
+            link.click();
+        }
+
+        function save() {
+            localStorage.setItem('FinanceMasterV3', JSON.stringify(data));
+            refreshUI();
+        }
+
+        function refreshUI() {
+            // 1. Dashboard Calc
+            let income = 0, expense = 0;
+            const catTotals = {};
+            
+            const searchQuery = document.getElementById('searchTx').value.toLowerCase();
+            const fromD = document.getElementById('filterFrom').value;
+            const toD = document.getElementById('filterTo').value;
+
+            data.txs.forEach(t => {
+                if(t.type === 'in') income += t.amt;
+                else {
+                    expense += t.amt;
+                    catTotals[t.cat] = (catTotals[t.cat] || 0) + t.amt;
+                }
             });
 
-            document.getElementById('balanceDisplay').innerText = `₪${balance.toLocaleString()}`;
-            document.getElementById('budgetStatus').innerText = `₪${spent} / ₪${db.budget}`;
-            document.getElementById('budgetBar').style.width = Math.min((spent/db.budget)*100, 100) + '%';
-            document.getElementById('ai-text').innerHTML = runAI();
-            renderTx();
-        }
+            document.getElementById('mainCashFlow').innerText = `₪${(income - expense).toLocaleString()}`;
 
-        function renderTx() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const html = db.txs
-                .filter(t => t.note.toLowerCase().includes(query))
+            // 2. Render Category Budgets
+            let budgetsHTML = '';
+            data.categories.forEach(c => {
+                const used = catTotals[c.name] || 0;
+                const perc = Math.min((used / c.budget) * 100, 100);
+                const color = perc > 90 ? 'var(--danger)' : 'var(--success)';
+                budgetsHTML += `
+                    <div class="cat-budget-item">
+                        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700;">
+                            <span>${c.icon} ${c.name}</span>
+                            <span>₪${used} / ₪${c.budget}</span>
+                        </div>
+                        <div class="progress-container"><div class="progress-bar" style="width:${perc}%; background:${color}"></div></div>
+                    </div>`;
+            });
+            document.getElementById('categoryBudgets').innerHTML = budgetsHTML;
+
+            // 3. Render Settings List
+            document.getElementById('manageCatsList').innerHTML = data.categories.map(c => `
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                    <span>${c.icon} ${c.name}</span>
+                    <span>תקציב: ₪${c.budget}</span>
+                </div>
+            `).join('');
+
+            // 4. Render History (with Filters)
+            const historyHTML = data.txs
+                .filter(t => t.note.toLowerCase().includes(searchQuery))
+                .filter(t => !fromD || new Date(t.date) >= new Date(fromD))
+                .filter(t => !toD || new Date(t.date) <= new Date(toD))
                 .sort((a,b) => b.id - a.id)
                 .map(t => `
-                    <div class="tx-item">
+                    <div class="card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <div style="font-weight:700;">${t.note}</div>
-                            <div style="font-size:12px; color:var(--text-sec);">${new Date(t.date).toLocaleDateString()}</div>
+                            <div style="font-size:12px; color:var(--text-sec);">${new Date(t.date).toLocaleDateString()} | ${t.cat}</div>
                         </div>
-                        <div style="color: ${t.type === 'in' ? 'var(--success)' : 'var(--danger)'}; font-weight:900;">
+                        <div style="font-weight:800; color:${t.type === 'in' ? 'var(--success)' : 'var(--text)'}">
                             ${t.type === 'in' ? '+' : '-'}₪${t.amt}
                         </div>
                     </div>
                 `).join('');
-            document.getElementById('historyList').innerHTML = html;
+            document.getElementById('txHistory').innerHTML = historyHTML;
         }
 
-        refresh();
+        refreshUI();
     </script>
 </body>
 </html>
