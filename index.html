@@ -3,88 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Pro Ultimate</title>
+    <title>Finance Pro Max</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #4f46e5; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --red: #ef4444; --green: #10b981; --border: #e2e8f0; }
-        [data-theme="dark"] { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; transition: 0.3s; }
-        .container { padding: 16px; display: none; }
+        /* משתנים לעיצוב חכם (תמיכה במצב לילה ויום) */
+        :root { 
+            --primary: #4f46e5; --primary-light: #e0e7ff; 
+            --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-muted: #64748b;
+            --red: #ef4444; --green: #10b981; --border: #e2e8f0;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
+            --border: #334155; --primary-light: #312e81;
+        }
+
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background 0.3s; padding-bottom: 80px; }
+        * { box-sizing: border-box; }
+        
+        /* אזורים וכרטיסיות */
+        .container { padding: 16px; display: none; animation: fadeIn 0.3s; }
         .active-page { display: block; }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 16px; border: 1px solid var(--border); }
-        .val { font-size: 32px; font-weight: 800; }
-        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-bottom: 10px; }
-        button { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); }
-        .progress-bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 16px; border: 1px solid var(--border); transition: background 0.3s, border 0.3s; }
+        
+        /* טיפוגרפיה */
+        .title { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .val { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+        
+        /* טפסים וכפתורים */
+        input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 16px; border-radius: 14px; font-size: 16px; margin-bottom: 12px; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.97); }
+        .btn-secondary { background: var(--border); color: var(--text); margin-top: 10px; }
+        
+        /* רשימת תנועות */
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--primary-light); margin-left: 12px; }
+        
+        /* תפריט תחתון (Bottom Nav) */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px 10px 25px; border-top: 1px solid var(--border); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 100; transition: background 0.3s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-3px); }
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
+        
+        /* פופאפ (Modal) להוספת תנועה */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
+        .modal-content { background: var(--card); width: 100%; padding: 24px; border-radius: 24px 24px 0 0; animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: var(--primary); transition: 0.3s; }
     </style>
 </head>
 <body>
 
     <div id="page-home" class="container active-page">
-        <div class="card">
-            <div style="color:var(--text); opacity:0.7;">יתרה נוכחית</div>
+        <div class="card" style="text-align: center;">
+            <div class="title">יתרה נוכחית</div>
             <div class="val" id="balTotal">₪0</div>
-        </div>
-        
-        <div class="card">
-            <h3>יעד חיסכון: חופשה</h3>
-            <div class="progress-bar"><div id="goalFill" style="height:100%; background:var(--green); width:60%"></div></div>
-            <p>₪1,800 מתוך ₪3,000</p>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <div style="flex: 1; background: rgba(16,185,129,0.1); padding: 10px; border-radius: 12px; color: var(--green);">
+                    <div style="font-size: 12px;">הכנסות החודש</div><strong id="balIn">₪0</strong>
+                </div>
+                <div style="flex: 1; background: rgba(239,68,68,0.1); padding: 10px; border-radius: 12px; color: var(--red);">
+                    <div style="font-size: 12px;">הוצאות החודש</div><strong id="balOut">₪0</strong>
+                </div>
+            </div>
         </div>
 
         <div class="card">
-            <h3>תובנות AI</h3>
-            <div id="aiInsight" style="font-size:14px; opacity:0.8;">מנתח נתונים...</div>
+            <div class="title" style="display:flex; justify-content: space-between;">
+                <span>מצב תקציב חודשי</span> <span id="goalText">0%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="goalFill"></div></div>
         </div>
-        
+
         <div class="card">
-            <h3>הוצאות החודש</h3>
-            <canvas id="mainChart"></canvas>
+            <div class="title">הוצאות לפי קטגוריה</div>
+            <canvas id="chartCat" height="200"></canvas>
         </div>
     </div>
 
     <div id="page-tx" class="container">
         <div class="card">
-            <h3>היסטוריית תנועות</h3>
+            <div class="title">כל התנועות</div>
+            <div id="txListEmpty" style="text-align:center; padding: 20px; color: var(--text-muted);">אין תנועות עדיין</div>
             <div id="txList"></div>
         </div>
     </div>
 
-    <div id="page-receipts" class="container">
+    <div id="page-settings" class="container">
         <div class="card">
-            <h3>סריקת קבלות</h3>
-            <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
-            <button onclick="document.getElementById('cameraInput').click()">📸 צלם קבלה</button>
-            <p style="margin-top:10px; font-size:12px;">מערכת ה-OCR תזהה סכום ותאריך אוטומטית</p>
+            <div class="title">הגדרות אפליקציה</div>
+            <button class="btn-secondary" onclick="toggleTheme()">🌓 החלף מצב תצוגה (יום/לילה)</button>
+            <button class="btn-secondary" onclick="exportCSV()">📊 ייצא נתונים לאקסל (CSV)</button>
+        </div>
+        <div class="card">
+            <div class="title">יעד תקציב חודשי</div>
+            <input type="number" id="setGoal" placeholder="הכנס סכום יעד" inputmode="numeric">
+            <button onclick="saveGoal()">עדכן יעד</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h3 style="margin:0;">הוספת תנועה</h3>
+                <span onclick="closeAdd()" style="font-size: 24px; cursor: pointer;">✕</span>
+            </div>
+            <input type="number" id="amt" placeholder="סכום (₪)" inputmode="decimal">
+            <input type="text" id="note" placeholder="עבור מה?">
+            <select id="type" onchange="updateCats()">
+                <option value="out">הוצאה 🔻</option>
+                <option value="in">הכנסה 🌿</option>
+            </select>
+            <select id="cat"></select>
+            <button onclick="saveTx()">שמור</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div onclick="nav('home')">🏠</div>
-        <div onclick="nav('tx')">📜</div>
-        <div onclick="nav('receipts')">📸</div>
-        <div onclick="toggleTheme()">🌓</div>
+        <div class="nav-item active" onclick="nav('home', this)">
+            <div class="nav-icon">🏠</div><span>ראשי</span>
+        </div>
+        <div class="nav-item" onclick="openAdd()">
+            <div class="nav-icon" style="background: var(--primary); color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);">➕</div>
+            <span style="margin-top: 5px;">הוסף</span>
+        </div>
+        <div class="nav-item" onclick="nav('tx', this)">
+            <div class="nav-icon">📜</div><span>תנועות</span>
+        </div>
+        <div class="nav-item" onclick="nav('settings', this)">
+            <div class="nav-icon">⚙️</div><span>הגדרות</span>
+        </div>
     </nav>
 
     <script>
-        // לוגיקה מאוחדת
-        function nav(id) {
-            document.querySelectorAll('.container').forEach(c => c.classList.remove('active-page'));
-            document.getElementById('page-' + id).classList.add('active-page');
-        }
+        // אתחול נתונים
+        let db = JSON.parse(localStorage.getItem('fin_pro_db')) || [];
+        let goal = localStorage.getItem('fin_pro_goal') || 5000;
+        let chart;
+        
+        const catIcons = { "סופר": "🛒", "קניות": "🛍️", "חשבונות": "💡", "רכב": "🚗", "פנאי": "🍔", "שונות": "✨", "משכורת": "💰", "מתנה": "🎁" };
+
+        // הגדרת ערכת נושא
+        if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
 
         function toggleTheme() {
-            document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            updateUI(); // מרענן צבעי גרף
         }
 
-        // ניתוח נתונים בסיסי ב-JS
-        setTimeout(() => {
-            document.getElementById('aiInsight').innerText = "💡 טיפ: הוצאת 15% פחות על מסעדות החודש!";
-        }, 1000);
+        // ניווט בין עמודים
+        function nav(pageId, el) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active-page'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active-page');
+            if(el) el.classList.add('active');
+            updateUI();
+        }
 
-        // כאן משתלבת הלוגיקה הקודמת שלך של שמירת נתונים ב-LocalStorage
-        console.log("Finance Pro Ultimate Loaded");
+        // ניהול מודל הוספה
+        function openAdd() { document.getElementById('addModal').style.display = 'flex'; updateCats(); }
+        function closeAdd() { document.getElementById('addModal').style.display = 'none'; }
+        
+        function updateCats() {
+            const type = document.getElementById('type').value;
+            const select = document.getElementById('cat');
+            if(type === 'out') {
+                select.innerHTML = `<option value="סופר">סופר ומכולת</option><option value="קניות">קניות וביגוד</option><option value="חשבונות">חשבונות ודיור</option><option value="רכב">רכב ותחבורה</option><option value="פנאי">פנאי ומסעדות</option><option value="שונות">שונות</option>`;
+            } else {
+                select.innerHTML = `<option value="משכורת">משכורת</option><option value="מתנה">העברה/מתנה</option>`;
+            }
+        }
+
+        function saveTx() {
+            const amt = parseFloat(document.getElementById('amt').value);
+            const note = document.getElementById('note').value;
+            if(!amt || !note) return alert('חסרים נתונים');
+            
+            db.push({ id: Date.now(), date: new Date().toLocaleDateString('he-IL'), amt, note, type: document.getElementById('type').value, cat: document.getElementById('cat').value });
+            localStorage.setItem('fin_pro_db', JSON.stringify(db));
+            
+            document.getElementById('amt').value = ''; document.getElementById('note').value = '';
+            closeAdd(); updateUI();
+        }
+
+        function delTx(id) {
+            if(confirm('למחוק תנועה?')) { db = db.filter(t => t.id !== id); localStorage.setItem('fin_pro_db', JSON.stringify(db)); updateUI(); }
+        }
+
+        function saveGoal() {
+            const g = document.getElementById('setGoal').value;
+            if(g) { goal = g; localStorage.setItem('fin_pro_goal', goal); alert('היעד עודכן!'); updateUI(); }
+        }
+
+        function exportCSV() {
+            let csv = "תאריך,סוג,קטגוריה,תיאור,סכום\n";
+            db.forEach(t => csv += `${t.date},${t.type==='in'?'הכנסה':'הוצאה'},${t.cat},${t.note},${t.amt}\n`);
+            const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob); link.download = "נתוני_תקציב.csv"; link.click();
+        }
+
+        function updateUI() {
+            let total = 0, inMonth = 0, outMonth = 0;
+            const list = document.getElementById('txList'); list.innerHTML = '';
+            const currMonth = new Date().getMonth();
+            let catData = {};
+
+            if(db.length === 0) document.getElementById('txListEmpty').style.display = 'block';
+            else document.getElementById('txListEmpty').style.display = 'none';
+
+            db.slice().reverse().forEach(t => {
+                const isInc = t.type === 'in';
+                total += isInc ? t.amt : -t.amt;
+                
+                const tMonth = new Date(t.id).getMonth();
+                if(tMonth === currMonth) {
+                    if(isInc) inMonth += t.amt;
+                    else { outMonth += t.amt; catData[t.cat] = (catData[t.cat] || 0) + t.amt; }
+                }
+
+                list.innerHTML += `
+                    <div class="tx-item">
+                        <div style="display:flex; align-items:center;">
+                            <div class="tx-icon">${catIcons[t.cat] || '🏷️'}</div>
+                            <div style="margin-right:12px;">
+                                <div style="font-weight:bold;">${t.note}</div>
+                                <div style="font-size:12px; color:var(--text-muted);">${t.date}</div>
+                            </div>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-weight:bold; color:var(--${isInc?'green':'red'});">${isInc?'+':'-'}₪${t.amt}</div>
+                            <div style="font-size:12px; color:var(--red);" onclick="delTx(${t.id})">מחק</div>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('balTotal').innerText = '₪' + total.toLocaleString();
+            document.getElementById('balIn').innerText = '₪' + inMonth.toLocaleString();
+            document.getElementById('balOut').innerText = '₪' + outMonth.toLocaleString();
+
+            const prog = Math.min((outMonth / goal) * 100, 100);
+            document.getElementById('goalFill').style.width = prog + '%';
+            document.getElementById('goalFill').style.background = prog > 90 ? 'var(--red)' : 'var(--primary)';
+            document.getElementById('goalText').innerText = Math.round(prog) + '% מהיעד';
+            document.getElementById('setGoal').value = goal;
+
+            // עדכון גרף
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
+            
+            if(chart) chart.destroy();
+            chart = new Chart(document.getElementById('chartCat').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'], borderWidth: isDark? 2 : 0, borderColor: isDark? '#1e293b' : '#fff' }] },
+                options: { cutout: '70%', plugins: { legend: { position: 'left' } } }
+            });
+        }
+
+        updateCats(); updateUI();
     </script>
 </body>
 </html>
